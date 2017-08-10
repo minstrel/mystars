@@ -7,6 +7,9 @@ class Numeric
   def to_rad
     self * Math::PI / 180
   end
+  def to_deg
+    self * ( 180 / Math::PI )
+  end
 end
 
 class MyStars
@@ -15,6 +18,7 @@ class MyStars
     # Local latitude setter, north is positive
     @lat = local_lat
     # Express local_lon as negative for west, positive for east
+    @lon = local_lon
     # Current Julian Day, fractional
     @jd = DateTime.now.ajd.to_f
     # Julian Days since 1 Jan 2000 at 12 UTC
@@ -38,12 +42,36 @@ class MyStars
     @last = @gast + ( local_lon / 15.0 )
   end
 
+  # OK troubleshooting results here.  So far:
+  # @gast and @last agree with online calculators
+  # The mesaurement for h below is the same using USNO and the positional astronomy
+  # at http://www2.arnes.si/%7Egljsentvid10/sfera/chapter7.htm
+  # Now next thing is to re-write the altitude and azimuth equation using USNO's equations
+  # OK update, added in the .to_deg step at the end to bring the results back to degrees
+  # Altitude is within 5 minutes of the calculation at
+  # http://jukaukor.mbnet.fi/star_altitude.html
+  # Azimuth is off by 5 degrees though...
+  # Let's still try it with the USNO's equations
+
+  # These don't seem to yield the results I want.  Going to try the usno's calculation instead.
   def altitude(ra, dec)
     h = ( @last - ra ) * 15
-    Math::asin( Math::sin(dec.to_rad) * Math::sin(@lat.to_rad) + Math::cos(dec.to_rad) * Math::cos(@lat.to_rad) * Math::cos(h.to_rad) )
+    Math::asin( Math::sin(dec.to_rad) * Math::sin(@lat.to_rad) + Math::cos(dec.to_rad) * Math::cos(@lat.to_rad) * Math::cos(h.to_rad) ).to_deg
   end
 
-  def azimuth
+  def azimuth(ra, dec)
+    a = altitude(ra, dec)
+    h = ( @last - ra ) * 15
+    Math::asin( (-(Math::sin(h.to_rad) * Math::cos(@lat.to_rad))) / Math::cos(a.to_rad) ).to_deg
+  end
+
+  # USNO's calculation, appears similar but calculates h from gast
+  def altitude2(ra, dec)
+    lha = ( @gast - ra ) * 15 + @lon
+    
+  end
+
+  def azumuth2
 
   end
 end
