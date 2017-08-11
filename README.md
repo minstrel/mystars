@@ -8,10 +8,13 @@ Currently, the output comes within a few minutes of what Stellarium shows at the
 
 ```ruby
 require_relative 'mystars'
-# Create a new MyStars object, passing in local longitude and latitude as decimal degrees
+# Create a new MyStars object, passing in local longitude and latitude as
+# decimal degrees
 mystars = MyStars.new(-71, 43)
-# Pass Right Ascension (as decimal hours) and Declination (as decimal degrees) to the methods altitude, azimuth or aa and get back the corresponding value, as decimal degrees.
-# The aa method passes them both back as pretty text, altitude and azimuth just return the values.
+# Pass Right Ascension (as decimal hours) and Declination (as decimal degrees)
+# to the methods altitude, azimuth and get back the corresponding value,
+# as decimal degrees.
+# The aa method passes them both back as pretty text.
 # Calculating Vega's position below:
 mystars.azimuth(18.616666,38.783333)
 => 43.96040907459006
