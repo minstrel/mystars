@@ -51,7 +51,8 @@ class MyStars
   end
 
   # Altitude and Azimuth methods take the Right Ascension and Declination of a fixed
-  # star as decimal degrees and output the Altitude and Azimuth as decimal degrees.
+  # star as decimal hours for RA and decimal degrees for Dec and output the
+  # Altitude and Azimuth as decimal degrees.
   # AA method just runs them both and sends a pretty output.
   # This is based on the USNO's calculations here:
   # http://aa.usno.navy.mil/faq/docs/Alt_Az.php
