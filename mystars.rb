@@ -74,6 +74,7 @@ class MyStars
     c = Math::cos(@lat.to_rad)
     d = Math::sin(@lat.to_rad)
     e = Math::cos(lha.to_rad)
+    # Old incorrect formula, delete this once I'm confident atan 2 is working.
     # Math::atan(a/(b*c-d*e)).to_deg
     az = Math::atan2( a , (b*c - d*e)).to_deg
     if az >= 0
