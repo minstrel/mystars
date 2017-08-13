@@ -25,5 +25,8 @@ Altitude is 8.97361521398292
 Azimuth is 43.96040907459006
 ```
 
-I'm wondering if there may be issues related to periodicity of the arcsin and arctan functions, but so far I haven't been able to break anything by moving locations into the southern hemisphere or tracking stars below the horizon.
-The Azimuth values can return negative (probably between 180 and 360), but are still accurate.
+I think I've worked out the issues with the azimuth calculations.  Using the double argument arctan, I'm getting accurate results so far (vs mistakenly using regular arctan before).
+
+Testing a bunch now to see if I can break it.
+
+Next step if all goes well, figuring out how to import data and batch process multiple stars.

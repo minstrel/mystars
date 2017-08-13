@@ -74,7 +74,14 @@ class MyStars
     c = Math::cos(@lat.to_rad)
     d = Math::sin(@lat.to_rad)
     e = Math::cos(lha.to_rad)
-    Math::atan(a/(b*c-d*e)).to_deg
+    # Math::atan(a/(b*c-d*e)).to_deg
+    az = Math::atan2( a , (b*c - d*e)).to_deg
+    if az >= 0
+      az
+    else
+      az += 360
+      az
+    end
   end
 
   def aa(ra,dec)
