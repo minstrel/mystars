@@ -7,13 +7,13 @@ puts "Enter your longitude as decimal degrees, negative is West:"
 LON = gets.chomp
 puts "Enter your latitude as decimal degrees, negative is South:"
 LAT = gets.chomp
-@stars = MyStars.new(LON.to_f,LAT.to_f)
+@stars = MyStarsGeo.new(LON.to_f,LAT.to_f)
 
 def menu
   puts "Enter R to refresh time, S to enter a new star and get its altitude and azimuth, anything else to quit"
   action = gets.chomp.downcase
   if action == 'r'
-    @stars = MyStars.new(LON.to_f,LAT.to_f)
+    @stars = MyStarsGeo.new(LON.to_f,LAT.to_f)
     puts "Time Refreshed"
     menu
   elsif action == 's'
