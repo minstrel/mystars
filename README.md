@@ -30,3 +30,7 @@ I think I've worked out the issues with the azimuth calculations.  Using the dou
 Testing a bunch now to see if I can break it.
 
 Next step if all goes well, figuring out how to import data and batch process multiple stars.
+
+### Data Sources:
+
+1. mystars_6.json - From D3 Celestial by Olaf Frohn, https://github.com/ofrohn/d3-celestial, BSD License.
