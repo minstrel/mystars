@@ -10,15 +10,33 @@ class Numeric
   def to_deg
     self * ( 180 / Math::PI )
   end
+  def long_to_ra
+    if self < 0
+      (self + 360) / 15
+    else
+      self / 15
+    end
+  end
 end
 
 class MyStars
 
   # Pass in a file object with star data and get back an array of MyStarsStar
   # objects.
+  # For now I'm going to use the JSON files as-is, converting -180 - 180
+  # values of long to RA in decimal hours.
   def self.newstars_from_JSON(file)
-    star_array = []
-
+    stars = MyStarsStars.new
+    data = JSON.parse(file)
+    data['features'].each do |star|
+      newstar = MyStarsStar.new
+      newstar.id = star['id']
+      newstar.name = star['properties']['name']
+      newstar.ra = star['geometry']['coordinates'][0].long_to_ra.to_f
+      newstar.dec = star['geometry']['coordinates'][1].to_f
+      stars.members << newstar
+    end
+    stars
   end
 
 end
@@ -105,6 +123,21 @@ class MyStarsGeo < MyStars
 end
 
 class MyStarsStar < MyStars
-  attr_accessor :id, :name, :ra, :dec
+  # This represents a single star
+  attr_accessor :id, :name, :ra, :dec, :alt, :az
 end
 
+class MyStarsStars < MyStars
+  # This represents a collection of stars
+  attr_accessor :members
+  def initialize
+    @members = []
+  end
+  # Update altitude and azimuth with local data from a MyStarsGeo object
+  def localize(geo)
+    self.members.each do |star|
+      star.alt = geo.altitude(star.ra, star.dec)
+      star.az = geo.azimuth(star.ra, star.dec)
+    end
+  end
+end
