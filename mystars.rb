@@ -25,6 +25,7 @@ class MyStars
   # objects.
   # For now I'm going to use the JSON files as-is, converting -180 - 180
   # values of long to RA in decimal hours.
+  # This should just get moved to the intialize method of MyStarsStars
   def self.newstars_from_JSON(file)
     stars = MyStarsStars.new
     data = JSON.parse(file)
