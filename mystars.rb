@@ -33,6 +33,8 @@ class MyStars
       newstar = MyStarsStar.new
       newstar.id = star['id']
       newstar.name = star['properties']['name']
+      newstar.desig = star['properties']['desig']
+      newstar.con = star['properties']['con'] 
       newstar.ra = star['geometry']['coordinates'][0].long_to_ra.to_f
       newstar.dec = star['geometry']['coordinates'][1].to_f
       stars.members << newstar
@@ -52,13 +54,14 @@ class MyStarsGeo < MyStars
   # This calculation is based on the USNO's calculations here:
   # http://aa.usno.navy.mil/faq/docs/GAST.php
 
-  def initialize(local_lon, local_lat)
+  def initialize(local_lon, local_lat, jd=nil)
     # Local latitude setter, north is positive
     @lat = local_lat
     # Express local_lon as negative for west, positive for east
     @lon = local_lon
-    # Current Julian Day, fractional
-    @jd = DateTime.now.ajd.to_f
+    # Julian Day, either specified (optional)
+    # else current Julian Day, fractional
+    @jd = if jd then jd else DateTime.now.ajd.to_f end
     # Julian Days since 1 Jan 2000 at 12 UTC
     @jda = @jd - 2451545.0
     # Julian centuries since 1 Jan 2000 at 12 UTC
@@ -125,7 +128,7 @@ end
 
 class MyStarsStar < MyStars
   # This represents a single star
-  attr_accessor :id, :name, :ra, :dec, :alt, :az
+  attr_accessor :id, :name, :desig, :con, :ra, :dec, :alt, :az, :circ_x, :circ_y
 end
 
 class MyStarsStars < MyStars
@@ -140,5 +143,11 @@ class MyStarsStars < MyStars
       star.alt = geo.altitude(star.ra, star.dec)
       star.az = geo.azimuth(star.ra, star.dec)
     end
+  end
+  def plot_on_circle
+    self.members.each do |star|
+      star.circ_x = Math.sin(star.az.to_rad) * (90 - star.alt)
+      star.circ_y = Math.cos(star.az.to_rad) * (90 - star.alt)
+    end 
   end
 end
