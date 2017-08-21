@@ -6,8 +6,10 @@ require_relative 'mystars'
 
 Curses.init_screen
 begin
-  # Get the users lon and lat and the hipp. number they want to center on
   win = Curses.stdscr
+  # Allow arrow key / keypad input
+  win.keypad = true
+  # Get the users lon and lat and the hipp. number they want to center on
   win.setpos(win.maxy / 2, 5)
   win.addstr("Enter your longitude as decimal degrees, West is negative")
   win.setpos(win.maxy / 2 + 1, 5)
@@ -34,29 +36,29 @@ begin
   origin = collection.members.find { |x| x.id == id }
   centery = origin.circ_y
   centerx = origin.circ_x
-  # Iterate through visible stars and try to plot on current screen,
-  # given 10 degrees FOV N-S (IE y axis) and enough to fill E-W (x axis)
-  miny = centery - 5.0
-  maxy = centery + 5.0
-  xrange = (win.maxx.to_f / win.maxy.to_f) * 10.0
-  minx = centerx - (xrange / 2.0) 
-  maxx = centerx + (xrange / 2.0)
-  win.clear
-  collection.members.each do |star|
-    if (star.circ_y.between?(miny,maxy)) && (star.circ_x.between?(minx,maxx))
-      # Figure out the y position on current screen
-      ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
-      # Figure out the x position on current screen
-      xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
-      win.setpos(ypos,xpos)
-      win.addstr("*")
-      win.setpos(ypos+1,xpos)
-      #win.addstr(star.id.to_s)
-      #Ruby issue with displaying UTF-8 multibye characters, using ID for now
-      win.addstr(star.desig + " " + star.con)
+  # Draw a window centered around the input coords
+  MyStarsWindows.drawWindow(centery,centerx,collection,win)
+  while input = win.getch
+    case input
+    when 10
+      break
+    when Curses::Key::LEFT
+      centerx -= 1
+      MyStarsWindows.drawWindow(centery,centerx,collection,win)
+    when Curses::Key::RIGHT
+      centerx += 1
+      MyStarsWindows.drawWindow(centery,centerx,collection,win)
+    when Curses::Key::UP
+      centery -= 1
+      MyStarsWindows.drawWindow(centery,centerx,collection,win)
+    when Curses::Key::DOWN
+      centery += 1
+      MyStarsWindows.drawWindow(centery,centerx,collection,win)
+    end
+    if input == 10
+      break
     end
   end
-  win.getch
 ensure
   Curses.close_screen
 end

@@ -151,3 +151,40 @@ class MyStarsStars < MyStars
     end 
   end
 end
+
+class MyStarsWindows < MyStars
+  # Methods to use to draw and navigate curses windows
+  # This should probably get moved to a new file at some point.
+
+  def self.drawWindow(centery,centerx,collection,win)
+    # This is probably inefficent as it polls all available stars, but
+    # hopefully good enough for now.
+    # Takes a collection, x and y coords to center on and window to act on
+    # and draws window.
+
+    # Iterate through visible stars and try to plot on current screen,
+    # given 10 degrees FOV N-S (IE y axis) and enough to fill E-W (x axis)
+    miny = centery - 5.0
+    maxy = centery + 5.0
+    xrange = (win.maxx.to_f / win.maxy.to_f) * 10.0
+    minx = centerx - (xrange / 2.0)
+    maxx = centerx + (xrange / 2.0)
+    win.clear
+    collection.members.each do |star|
+      if (star.circ_y.between?(miny,maxy)) && (star.circ_x.between?(minx,maxx))
+        # Figure out the y position on current screen
+        ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
+        # Figure out the x position on current screen
+        xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+        win.setpos(ypos,xpos)
+        win.addstr("*")
+        win.setpos(ypos+1,xpos)
+        #win.addstr(star.id.to_s)
+        #Ruby issue with displaying UTF-8 multibye characters, using ID for now
+        win.addstr(star.desig + " " + star.con)
+      end
+    end
+  
+  end 
+
+end

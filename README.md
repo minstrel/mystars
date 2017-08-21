@@ -7,7 +7,7 @@ This is a little ncurses based planetarium.
 * Ruby 2.1 or later
 * The ruby 'curses' gem, installed via:
   `gem install curses`
-  or from source at [https://github.com/ruby/curses]
+  or from source at https://github.com/ruby/curses
 * Curses, ncurses or PDCurses (some versions may have issues with Unicode characters, in this case the Greek letters).
 
 ### Current State
@@ -31,6 +31,11 @@ Right now, the application draws a flat map, similar to what you'd get at skymap
 
 I'd really like a perspective view like Stellarium and other software displays, but that's out of my ability range right now and I'd rather make something fun and flesh out main features before diving into 3D to 2D conversions.
 
+### Changelog
+
+0.0.2
+* Scrolling enabled, moves 1 degree at a time
+
 ### Data Sources:
 
-1. mystars\_6.json - From D3 Celestial by Olaf Frohn, [https://github.com/ofrohn/d3-celestial], BSD License.
+1. mystars\_6.json - From D3 Celestial by Olaf Frohn, https://github.com/ofrohn/d3-celestial, BSD License.
