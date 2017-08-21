@@ -16,12 +16,15 @@ Right now, running mystars\_curses\_poc.rb will run a little proof of concept pr
 
 Most screens will appear stretched vertically (ie North - South).  This is an artifact of most fonts being rectangular, as spacing is done by row and column count, not font size.
 
+You can now scroll around with arrow keys and zoom in and out with
+plus and minus.
+
 ### To implement
 
 Basically, the usual planetarium stuff, like:
 
-* Scrolling around
-* Zooming in
+* ~~Scrolling around~~
+* ~~Zooming in~~
 * Selecting objects on the current screen and getting info on them
 * Filtering by magnitude and other properties.
 * Drawing constellation lines
