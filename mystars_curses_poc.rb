@@ -1,3 +1,4 @@
+#!/usr/bin/ruby -w
 # encoding: utf-8
 
 require 'curses'
@@ -20,7 +21,7 @@ begin
   win.setpos(win.maxy / 2 + 5, 5)
   id = win.getstr.to_i
   # Create a new collection based on mag 6 and brighter
-  collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json'))
+  collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json', :encoding => 'UTF-8'))
   # Create a new local geolocation
   geo = MyStarsGeo.new(lon, lat)
   # Add alt and azi data to the collection
@@ -50,9 +51,9 @@ begin
       win.setpos(ypos,xpos)
       win.addstr("*")
       win.setpos(ypos+1,xpos)
-      win.addstr(star.id.to_s)
+      #win.addstr(star.id.to_s)
       #Ruby issue with displaying UTF-8 multibye characters, using ID for now
-      #win.addstr(star.desig + " " + star.con)
+      win.addstr(star.desig + " " + star.con)
     end
   end
   win.getch
