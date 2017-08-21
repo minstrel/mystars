@@ -1,36 +1,36 @@
 # MyStars
 
-This is a little library to calculate the current position of objects (currently fixed stars) in the sky.
+This is a little ncurses based planetarium.
 
-Currently, the output comes within a few minutes of what Stellarium shows at the same geographic coordinates.
+### Requirements
 
-### Usage:
+* Ruby 2.1 or later
+* The ruby 'curses' gem, installed via:
+  `gem install curses`
+  or from source at [https://github.com/ruby/curses]
+* Curses, ncurses or PDCurses (some versions may have issues with Unicode characters, in this case the Greek letters).
 
-```ruby
-require_relative 'mystars'
-# Create a new MyStars object, passing in local longitude and latitude as
-# decimal degrees
-mystars = MyStars.new(-71, 43)
-# Pass Right Ascension (as decimal hours) and Declination (as decimal degrees)
-# to the methods altitude, azimuth and get back the corresponding value,
-# as decimal degrees.
-# The aa method passes them both back as pretty text.
-# Calculating Vega's position below:
-mystars.azimuth(18.616666,38.783333)
-=> 43.96040907459006
-mystars.altitude(18.616666,38.783333)
-=> 8.97361521398292
-mystars.aa(18.616666,38.783333)
-Altitude is 8.97361521398292
-Azimuth is 43.96040907459006
-```
+### Current State
 
-I think I've worked out the issues with the azimuth calculations.  Using the double argument arctan, I'm getting accurate results so far (vs mistakenly using regular arctan before).
+Right now, running mystars\_curses\_poc.rb will run a little proof of concept program and prompt for a longitude, latitude and Hipparcos catalog number and then return a screen 10 degrees N-S and correspondingly sized E-W (via the available rows/cols in the terminal), showing stars down to 6th magnitude.
 
-Testing a bunch now to see if I can break it.
+Most screens will appear stretched vertically (ie North - South).  This is an artifact of most fonts being rectangular, as spacing is done by row and column count, not font size.
 
-Next step if all goes well, figuring out how to import data and batch process multiple stars.
+### To implement
+
+Basically, the usual planetarium stuff, like:
+
+* Scrolling around
+* Zooming in
+* Selecting objects on the current screen and getting info on them
+* Filtering by magnitude and other properties.
+* Drawing constellation lines
+* More stars and non-fixed objects (planets, comets, sun, moon, etc.).
+
+Right now, the application draws a flat map, similar to what you'd get at skymaps.com.  It represents a hemisphere at the latitude and longitude input by the user at the current time of day.
+
+I'd really like a perspective view like Stellarium and other software displays, but that's out of my ability range right now and I'd rather make something fun and flesh out main features before diving into 3D to 2D conversions.
 
 ### Data Sources:
 
-1. mystars_6.json - From D3 Celestial by Olaf Frohn, https://github.com/ofrohn/d3-celestial, BSD License.
+1. mystars\_6.json - From D3 Celestial by Olaf Frohn, [https://github.com/ofrohn/d3-celestial], BSD License.
