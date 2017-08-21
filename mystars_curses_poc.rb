@@ -36,24 +36,52 @@ begin
   origin = collection.members.find { |x| x.id == id }
   centery = origin.circ_y
   centerx = origin.circ_x
+  # Sets magnification to initial North-South value in degrees
+  mag = 10
   # Draw a window centered around the input coords
-  MyStarsWindows.drawWindow(centery,centerx,collection,win)
+  MyStarsWindows.drawWindow(centery,centerx,collection,win,mag)
   while input = win.getch
     case input
     when 10
       break
+    when "+"
+      # Plus sign, zooms in
+      case mag 
+      when 1
+        # 1 degree max zoom in
+      when 2..15
+        mag -= 1
+      when 20..180
+        mag -= 5
+      else
+        # There shouldn't be an else... 
+      end
+      MyStarsWindows.drawWindow(centery,centerx,collection,win,mag)
+    when "-"
+      # Minus sign, zooms out
+      case mag
+      when 1..14
+        mag += 1
+      when 15..175
+        mag += 5
+      when 180
+        # 180 degree max zoom out
+      else
+        # There shouldn't be an else here either...
+      end
+      MyStarsWindows.drawWindow(centery,centerx,collection,win,mag)
     when Curses::Key::LEFT
       centerx -= 1
-      MyStarsWindows.drawWindow(centery,centerx,collection,win)
+      MyStarsWindows.drawWindow(centery,centerx,collection,win,mag)
     when Curses::Key::RIGHT
       centerx += 1
-      MyStarsWindows.drawWindow(centery,centerx,collection,win)
+      MyStarsWindows.drawWindow(centery,centerx,collection,win,mag)
     when Curses::Key::UP
       centery -= 1
-      MyStarsWindows.drawWindow(centery,centerx,collection,win)
+      MyStarsWindows.drawWindow(centery,centerx,collection,win,mag)
     when Curses::Key::DOWN
       centery += 1
-      MyStarsWindows.drawWindow(centery,centerx,collection,win)
+      MyStarsWindows.drawWindow(centery,centerx,collection,win,mag)
     end
     if input == 10
       break

@@ -156,17 +156,23 @@ class MyStarsWindows < MyStars
   # Methods to use to draw and navigate curses windows
   # This should probably get moved to a new file at some point.
 
-  def self.drawWindow(centery,centerx,collection,win)
+  def self.drawWindow(centery,centerx,collection,win,mag)
     # This is probably inefficent as it polls all available stars, but
     # hopefully good enough for now.
+
+    # Also since I'm calling this all the time with the same objects
+    # passed in, I should just push all the variables to a settings object
+    # and skip all the arguments.
+
     # Takes a collection, x and y coords to center on and window to act on
     # and draws window.
 
     # Iterate through visible stars and try to plot on current screen,
     # given 10 degrees FOV N-S (IE y axis) and enough to fill E-W (x axis)
-    miny = centery - 5.0
-    maxy = centery + 5.0
-    xrange = (win.maxx.to_f / win.maxy.to_f) * 10.0
+
+    miny = centery - (mag / 2.0)
+    maxy = centery + (mag / 2.0)
+    xrange = (win.maxx.to_f / win.maxy.to_f) * mag.to_f
     minx = centerx - (xrange / 2.0)
     maxx = centerx + (xrange / 2.0)
     win.clear
