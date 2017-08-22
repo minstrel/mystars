@@ -21,8 +21,8 @@ end
 
 module App
   # Current settings - this is probably badly named...
-  AppSettings = Struct.new(:mag, :centery, :centerx, :collection, :lat, :lon)
-  Settings = AppSettings.new(10, 90, 90, nil, nil, nil)
+  AppSettings = Struct.new(:mag, :centery, :centerx, :collection, :lat, :lon, :in_view)
+  Settings = AppSettings.new(10, 90, 90, nil, nil, nil, nil)
 end
 
 class MyStars
@@ -139,9 +139,10 @@ end
 
 class MyStarsStars < MyStars
   # This represents a collection of stars
-  attr_accessor :members
+  attr_accessor :members, :selected
   def initialize
     @members = []
+    @selected = 0
   end
   # Update altitude and azimuth with local data from a MyStarsGeo object
   def localize(geo)
@@ -150,8 +151,7 @@ class MyStarsStars < MyStars
       star.az = geo.azimuth(star.ra, star.dec)
     end
   end
-  def plot_on_circle
-    self.members.each do |star|
+  def plot_on_circle self.members.each do |star|
       star.circ_x = Math.sin(star.az.to_rad) * (90 - star.alt)
       star.circ_y = Math.cos(star.az.to_rad) * (90 - star.alt)
     end 
@@ -165,10 +165,6 @@ class MyStarsWindows < MyStars
   def self.drawWindow(win)
     # This is probably inefficent as it polls all available stars, but
     # hopefully good enough for now.
-
-    # Also since I'm calling this all the time with the same objects
-    # passed in, I should just push all the variables to a settings object
-    # and skip all the arguments.
 
     # Takes a collection, x and y coords to center on and window to act on
     # and draws window.
@@ -187,6 +183,10 @@ class MyStarsWindows < MyStars
     minx = centerx - (xrange / 2.0)
     maxx = centerx + (xrange / 2.0)
     win.clear
+
+    # If we're drawing a window, the in_view stars have moved, so clear it
+    App::Settings.in_view = MyStarsStars.new
+
     collection.members.each do |star|
       if (star.circ_y.between?(miny,maxy)) && (star.circ_x.between?(minx,maxx))
         # Figure out the y position on current screen
@@ -196,12 +196,26 @@ class MyStarsWindows < MyStars
         win.setpos(ypos,xpos)
         win.addstr("*")
         win.setpos(ypos+1,xpos)
-        #win.addstr(star.id.to_s)
-        #Ruby issue with displaying UTF-8 multibye characters, using ID for now
+        #Make this more fine grained / toggleable later.  Right now it's
+        #useful for making sure we're looking at the right stuff.
+        #Text wrapping around was annoying me, so quicky fix in the
+        #if statement.
+        if (xpos + (star.desig + " " + star.con).length) > win.maxx
+          win.setpos(ypos+1, win.maxx - (star.desig + "  " + star.con).length)
+        end
         win.addstr(star.desig + " " + star.con)
+        # Add it to the stars in_view
+        # Use the x,y coords as a key for easy sorting into tab collection.
+        App::Settings.in_view.members << star
       end
     end
-  
+
+    # Sort the in_view stars by x, then y for tabbing
+    # Might be worth benchmarking later...
+    App::Settings.in_view.members.sort! do |a, b|
+      a.circ_y * 200 - a.circ_x <=> b.circ_y * 200 - b.circ_x
+    end
+    
   end 
 
   # We could store locations of info win lines as variables and reference
@@ -212,7 +226,7 @@ class MyStarsWindows < MyStars
     info_win.setpos(1,0)
     info_win.addstr("Field of View N/S:")
     info_win.setpos(2,0)
-    info_win.addstr(App::Settings.mag.to_s + " degrees  ")
+    info_win.addstr(App::Settings.mag.to_s + " degrees")
     info_win.setpos(19,0)
     info_win.addstr("Longitude:")
     info_win.setpos(20,0)
@@ -226,7 +240,8 @@ class MyStarsWindows < MyStars
 
   def self.updateMag(info_win)
     info_win.setpos(2,0)
-    info_win.addstr(App::Settings.mag.to_s + " degrees  ")
+    info_win.clrtoeol
+    info_win.addstr(App::Settings.mag.to_s + " degrees")
     info_win.refresh
   end
 
@@ -240,6 +255,34 @@ class MyStarsWindows < MyStars
     info_win.setpos(22,0)
     info_win.addstr(App::Settings.lat.to_s)
     info_win.refresh
+  end
+
+  def self.selectNext(win, info_win)
+    if App::Settings.in_view.selected == App::Settings.in_view.members.length - 1
+      App::Settings.in_view.selected = 0
+    else
+      App::Settings.in_view.selected += 1
+    end
+    star = App::Settings.in_view.members[App::Settings.in_view.selected]
+    # Figure out the y position on current screen
+    ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
+    # Figure out the x position on current screen
+    xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+    win.setpos(ypos,xpos)
+  end
+
+  def self.selectPrev(win, info_win)
+    if App::Settings.in_view.selected == 0 
+      App::Settings.in_view.selected = App::Settings.in_view.members.length - 1
+    else
+      App::Settings.in_view.selected -= 1
+    end
+    star = App::Settings.in_view.members[App::Settings.in_view.selected]
+    # Figure out the y position on current screen
+    ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
+    # Figure out the x position on current screen
+    xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+    win.setpos(ypos,xpos)
   end
 
 end
