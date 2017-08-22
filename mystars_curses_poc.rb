@@ -24,10 +24,10 @@ begin
   win.setpos(win.maxy / 2 + 3, 5)
   App::Settings.lat = win.getstr.to_f
   MyStarsWindows.updateLat(info_win)
-  win.setpos(win.maxy / 2 + 4, 5)
-  win.addstr("Enter Hipparcos number on which to center")
-  win.setpos(win.maxy / 2 + 5, 5)
-  id = win.getstr.to_i
+  #win.setpos(win.maxy / 2 + 4, 5)
+  #win.addstr("Enter Hipparcos number on which to center")
+  #win.setpos(win.maxy / 2 + 5, 5)
+  #id = win.getstr.to_i
   # Create a new collection based on mag 6 and brighter
   App::Settings.collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json', :encoding => 'UTF-8'))
   # Create a new local geolocation
@@ -39,14 +39,18 @@ begin
   # Plot them on x and y axis, circular star map style (hopefully!)
   App::Settings.collection.plot_on_circle
   # Get the x and y of the requested origin star
-  origin = App::Settings.collection.members.find { |x| x.id == id }
-  App::Settings.centery = origin.circ_y
-  App::Settings.centerx = origin.circ_x
+  #origin = App::Settings.collection.members.find { |x| x.id == id }
+  App::Settings.centery = 0
+  App::Settings.centerx = 0
   # Sets magnification to initial North-South value in degrees
   # Moved to App::Settings
   # mag = 10
   # Draw a window centered around the input coords
   MyStarsWindows.drawWindow(win)
+  # Don't echo input
+  Curses.noecho
+  # No cursor
+  Curses.curs_set(0)
   while input = win.getch
     case input
     when 10
@@ -79,6 +83,10 @@ begin
       end
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateMag(info_win)
+    when 9
+      MyStarsWindows.selectNext(win, info_win)
+    when Curses::Key::BTAB
+      MyStarsWindows.selectPrev(win, info_win)
     when Curses::Key::LEFT
       App::Settings.centerx -= 1
       MyStarsWindows.drawWindow(win)

@@ -142,7 +142,7 @@ class MyStarsStars < MyStars
   attr_accessor :members, :selected
   def initialize
     @members = []
-    @selected = 0
+    @selected = -1
   end
   # Update altitude and azimuth with local data from a MyStarsGeo object
   def localize(geo)
@@ -151,7 +151,8 @@ class MyStarsStars < MyStars
       star.az = geo.azimuth(star.ra, star.dec)
     end
   end
-  def plot_on_circle self.members.each do |star|
+  def plot_on_circle
+    self.members.each do |star|
       star.circ_x = Math.sin(star.az.to_rad) * (90 - star.alt)
       star.circ_y = Math.cos(star.az.to_rad) * (90 - star.alt)
     end 
@@ -258,6 +259,28 @@ class MyStarsWindows < MyStars
   end
 
   def self.selectNext(win, info_win)
+    # I'm repeating a lot of code from drawWindow here, should probably put
+    # current objects into some sort of container with x and y positions.
+    # Also need to add something here to handle errors, like no stars visible.
+    mag = App::Settings.mag
+    centery = App::Settings.centery
+    centerx = App::Settings.centerx
+    miny = centery - (mag / 2.0)
+    maxy = centery + (mag / 2.0)
+    xrange = (win.maxx.to_f / win.maxy.to_f) * mag.to_f
+    minx = centerx - (xrange / 2.0)
+    maxx = centerx + (xrange / 2.0)
+    # --- Deselect the previous one
+    star = App::Settings.in_view.members[App::Settings.in_view.selected]
+    # Figure out the y position on current screen
+    ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
+    # Figure out the x position on current screen
+    xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+    win.setpos(ypos,xpos)
+    # Make highlighting prettier later, use init_pairs and stuff
+    win.attrset(Curses::A_NORMAL)
+    win.addstr("*")
+    # ---
     if App::Settings.in_view.selected == App::Settings.in_view.members.length - 1
       App::Settings.in_view.selected = 0
     else
@@ -269,10 +292,36 @@ class MyStarsWindows < MyStars
     # Figure out the x position on current screen
     xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
     win.setpos(ypos,xpos)
+    # Make highlighting prettier later, use init_pairs and stuff
+    win.attrset(Curses::A_REVERSE)
+    win.addstr("*")
+    win.attrset(Curses::A_NORMAL)
   end
 
   def self.selectPrev(win, info_win)
-    if App::Settings.in_view.selected == 0 
+    # I'm repeating a lot of code from drawWindow here, should probably put
+    # current objects into some sort of container with x and y positions.
+    # Also need to add something here to handle errors, like no stars visible.
+    mag = App::Settings.mag
+    centery = App::Settings.centery
+    centerx = App::Settings.centerx
+    miny = centery - (mag / 2.0)
+    maxy = centery + (mag / 2.0)
+    xrange = (win.maxx.to_f / win.maxy.to_f) * mag.to_f
+    minx = centerx - (xrange / 2.0)
+    maxx = centerx + (xrange / 2.0)
+    # ---Deselect the previous one
+    star = App::Settings.in_view.members[App::Settings.in_view.selected]
+    # Figure out the y position on current screen
+    ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
+    # Figure out the x position on current screen
+    xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+    win.setpos(ypos,xpos)
+    # Make highlighting prettier later, use init_pairs and stuff
+    win.attrset(Curses::A_NORMAL)
+    win.addstr("*")
+    # ---
+    if (App::Settings.in_view.selected == 0) || (App::Settings.in_view.selected == -1)
       App::Settings.in_view.selected = App::Settings.in_view.members.length - 1
     else
       App::Settings.in_view.selected -= 1
@@ -283,6 +332,10 @@ class MyStarsWindows < MyStars
     # Figure out the x position on current screen
     xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
     win.setpos(ypos,xpos)
+    # Make highlighting prettier later, use init_pairs and stuff
+    win.attrset(Curses::A_REVERSE)
+    win.addstr("*")
+    win.attrset(Curses::A_NORMAL)
   end
 
 end

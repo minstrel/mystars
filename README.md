@@ -12,12 +12,13 @@ This is a little ncurses based planetarium.
 
 ### Current State
 
-Right now, running mystars\_curses\_poc.rb will run a little proof of concept program and prompt for a longitude, latitude and Hipparcos catalog number and then return a screen 10 degrees N-S and correspondingly sized E-W (via the available rows/cols in the terminal), showing stars down to 6th magnitude.
+Right now, running mystars\_curses\_poc.rb will run a little proof of concept program and prompt for a longitude and latitude and then return a screen 10 degrees N-S and correspondingly sized E-W (via the available rows/cols in the terminal), showing stars down to 6th magnitude.
 
 Most screens will appear stretched vertically (ie North - South).  This is an artifact of most fonts being rectangular, as spacing is done by row and column count, not font size.
 
-You can now scroll around with arrow keys and zoom in and out with
-plus and minus.
+You can now scroll around with arrow keys and zoom in and out with plus and minus.  Tab will select through stars on current screen (tabbing with no stars visible will crash).
+
+Hit enter key to exit.
 
 ### To implement
 
@@ -25,7 +26,7 @@ Basically, the usual planetarium stuff, like:
 
 * ~~Scrolling around~~
 * ~~Zooming in~~
-* Selecting objects on the current screen and getting info on them
+* ~~Selecting objects on the current screen~~ and getting info on them
 * Filtering by magnitude and other properties.
 * Drawing constellation lines
 * More stars and non-fixed objects (planets, comets, sun, moon, etc.).
@@ -41,6 +42,8 @@ I'd really like a perspective view like Stellarium and other software displays, 
 * Magnification enabled, 1 degree min, 180 max
 * Info sidebar created, currently showing field of view in degrees and lat/lon.
 * Refactored current settings like magnitide and current center info single settings object.
+* No more prompt for a star to initially center on, goes right to zenith
+* Can select stars, but no info in panel yet
 
 ### Data Sources:
 
