@@ -39,6 +39,8 @@ I'd really like a perspective view like Stellarium and other software displays, 
 0.0.2
 * Scrolling enabled, moves 1 degree at a time
 * Magnification enabled, 1 degree min, 180 max
+* Info sidebar created, currently showing field of view in degrees and lat/lon.
+* Refactored current settings like magnitide and current center info single settings object.
 
 ### Data Sources:
 

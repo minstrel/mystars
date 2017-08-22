@@ -19,6 +19,12 @@ class Numeric
   end
 end
 
+module App
+  # Current settings - this is probably badly named...
+  AppSettings = Struct.new(:mag, :centery, :centerx, :collection, :lat, :lon)
+  Settings = AppSettings.new(10, 90, 90, nil, nil, nil)
+end
+
 class MyStars
 
   # Pass in a file object with star data and get back an array of MyStarsStar
@@ -154,9 +160,9 @@ end
 
 class MyStarsWindows < MyStars
   # Methods to use to draw and navigate curses windows
-  # This should probably get moved to a new file at some point.
+  # These should probably get moved to a module at some point.
 
-  def self.drawWindow(centery,centerx,collection,win,mag)
+  def self.drawWindow(win)
     # This is probably inefficent as it polls all available stars, but
     # hopefully good enough for now.
 
@@ -169,6 +175,11 @@ class MyStarsWindows < MyStars
 
     # Iterate through visible stars and try to plot on current screen,
     # given 10 degrees FOV N-S (IE y axis) and enough to fill E-W (x axis)
+
+    mag = App::Settings.mag
+    centery = App::Settings.centery
+    centerx = App::Settings.centerx
+    collection = App::Settings.collection
 
     miny = centery - (mag / 2.0)
     maxy = centery + (mag / 2.0)
@@ -192,5 +203,43 @@ class MyStarsWindows < MyStars
     end
   
   end 
+
+  # We could store locations of info win lines as variables and reference
+  # those instead of direct locations.
+
+  def self.drawInfo(info_win)
+    # Initial drawing of info window
+    info_win.setpos(1,0)
+    info_win.addstr("Field of View N/S:")
+    info_win.setpos(2,0)
+    info_win.addstr(App::Settings.mag.to_s + " degrees  ")
+    info_win.setpos(19,0)
+    info_win.addstr("Longitude:")
+    info_win.setpos(20,0)
+    info_win.addstr(App::Settings.lon.to_s)
+    info_win.setpos(21,0)
+    info_win.addstr("Latitude")
+    info_win.setpos(22,0)
+    info_win.addstr(App::Settings.lat.to_s)
+    info_win.refresh
+  end
+
+  def self.updateMag(info_win)
+    info_win.setpos(2,0)
+    info_win.addstr(App::Settings.mag.to_s + " degrees  ")
+    info_win.refresh
+  end
+
+  def self.updateLon(info_win)
+    info_win.setpos(20,0)
+    info_win.addstr(App::Settings.lon.to_s)
+    info_win.refresh
+  end
+
+  def self.updateLat(info_win)
+    info_win.setpos(22,0)
+    info_win.addstr(App::Settings.lat.to_s)
+    info_win.refresh
+  end
 
 end
