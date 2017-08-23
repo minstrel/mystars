@@ -10,30 +10,41 @@ This is a little ncurses based planetarium.
   or from source at https://github.com/ruby/curses
 * Curses, ncurses or PDCurses (some versions may have issues with Unicode characters, in this case the Greek letters).
 
-### Current State
+### Current State & Instructions
 
-Right now, running mystars\_curses\_poc.rb will run a little proof of concept program and prompt for a longitude and latitude and then return a screen 10 degrees N-S and correspondingly sized E-W (via the available rows/cols in the terminal), showing stars down to 6th magnitude.
+MyStars is currently pre-alpha.  My focus is on new features and not UI or bugs.
 
-Most screens will appear stretched vertically (ie North - South).  This is an artifact of most fonts being rectangular, as spacing is done by row and column count, not font size.
+With the requirements installed, clone the repo and run mystars\_curses.rb.
 
-You can now scroll around with arrow keys and zoom in and out with plus and minus.  Tab will select through stars on current screen (tabbing with no stars visible will crash).
+When prompted, enter longitude and latitude.  The application will show a view centered on the zenith at that location and the current date and time.
+
+Only stars down to 6th magnitude and above the horizon are currently shown.
+
+Pan around with arrow keys or numeric keypad.
+
+Zoom in and out with -/+.
+
+Filter visible stars by magnitude with m/M.
+
+Most screens will appear stretched vertically (ie North - South).  This is an artifact of most fonts being rectangular, as spacing is done by row and column count, not font size. Installing a square font will mostly correct for this although line spacing may still cause some stretch.
 
 Hit enter key to exit.
 
 ### To implement
 
-Basically, the usual planetarium stuff, like:
+Some very basic features are now present.  A small and not comprehensive list of what I have in mind next includes:
 
-* ~~Scrolling around~~
-* ~~Zooming in~~
-* ~~Selecting objects on the current screen and getting info on them~~
-* ~~Filtering by magnitude~~ and other properties.
-* Drawing constellation lines
-* More stars and non-fixed objects (planets, comets, sun, moon, etc.).
+* Manual input of time, periodic updates, fast forward/reverse.
+* Additional filters, and moving similar toggleable settings to a popup window.
+* Drawing constellation lines.
+* Adding more stars and non-fixed objects (planets, comets, sun, moon, etc.).
+* Beginnings of a nicer "look", including colors and displaying different icons for stars dependant on magnitude range.  Also separate icons for DSOs once those are in.
+* Protocols to control Meade and nexStar mounts via serial interface.  This is highly dependant on my actually getting ahold of one to test.  This feels like it should be a "far flung future" feature, but I think I'd like to put it in sooner than later, because I have the feeling that if this application will ever be of use to anyone, it will be as a minimalist, quick and dirty, interface to control mounts that can be run from anywhere with a terminal. 
+* Views below the horizon.
 
-Right now, the application draws a flat map, similar to what you'd get at skymaps.com.  It represents a hemisphere at the latitude and longitude input by the user at the current time of day.
+Right now, the application draws a flat map, similar to what you'd get at skymaps.com, representing a hemisphere at the latitude and longitude input by the user at the current time of day.
 
-I'd really like a perspective view like Stellarium and other software displays, but that's out of my ability range right now and I'd rather make something fun and flesh out main features before diving into 3D to 2D conversions.
+While I originally wanted to get a perspective view going, I think I'm going to stick with the flat map, providing I can get views below the horizon working acceptably.
 
 ### Changelog
 
