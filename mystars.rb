@@ -21,8 +21,10 @@ end
 
 module App
   # Current settings - this is probably badly named...
-  AppSettings = Struct.new(:mag, :centery, :centerx, :collection, :lat, :lon, :in_view)
-  Settings = AppSettings.new(10, 90, 90, nil, nil, nil, nil)
+  # :mag is magnification, not magnitude (that was a bad choice, rename
+  # it sometime)
+  AppSettings = Struct.new(:mag, :vis_mag, :centery, :centerx, :collection, :lat, :lon, :in_view)
+  Settings = AppSettings.new(10, 6, 90, 90, nil, nil, nil, nil)
 end
 
 class MyStars
@@ -39,6 +41,7 @@ class MyStars
       newstar = MyStarsStar.new
       newstar.id = star['id']
       newstar.name = star['properties']['name']
+      newstar.mag = star['properties']['mag'].to_f
       newstar.desig = star['properties']['desig']
       newstar.con = star['properties']['con'] 
       newstar.ra = star['geometry']['coordinates'][0].long_to_ra.to_f
@@ -134,7 +137,7 @@ end
 
 class MyStarsStar < MyStars
   # This represents a single star
-  attr_accessor :id, :name, :desig, :con, :ra, :dec, :alt, :az, :circ_x, :circ_y
+  attr_accessor :id, :name, :mag, :desig, :con, :ra, :dec, :alt, :az, :circ_x, :circ_y
 end
 
 class MyStarsStars < MyStars
@@ -176,7 +179,7 @@ class MyStarsWindows < MyStars
     mag = App::Settings.mag
     centery = App::Settings.centery
     centerx = App::Settings.centerx
-    collection = App::Settings.collection
+    collection = App::Settings.collection.members.select { |member| member.mag <= App::Settings.vis_mag }
 
     miny = centery - (mag / 2.0)
     maxy = centery + (mag / 2.0)
@@ -188,7 +191,7 @@ class MyStarsWindows < MyStars
     # If we're drawing a window, the in_view stars have moved, so clear it
     App::Settings.in_view = MyStarsStars.new
 
-    collection.members.each do |star|
+    collection.each do |star|
       if (star.circ_y.between?(miny,maxy)) && (star.circ_x.between?(minx,maxx))
         # Figure out the y position on current screen
         ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
@@ -228,6 +231,10 @@ class MyStarsWindows < MyStars
     info_win.addstr("Field of View N/S:")
     info_win.setpos(2,0)
     info_win.addstr(App::Settings.mag.to_s + " degrees")
+    info_win.setpos(3,0)
+    info_win.addstr("Visible magnitude")
+    info_win.setpos(4,0)
+    info_win.addstr("<= " + App::Settings.vis_mag.to_s)
     info_win.setpos(36,0)
     info_win.addstr("Longitude:")
     info_win.setpos(37,0)
@@ -274,6 +281,13 @@ class MyStarsWindows < MyStars
     info_win.setpos(2,0)
     info_win.clrtoeol
     info_win.addstr(App::Settings.mag.to_s + " degrees")
+    info_win.refresh
+  end
+
+  def self.updateVisMag(info_win)
+    info_win.setpos(4,3)
+    info_win.clrtoeol
+    info_win.addstr(App::Settings.vis_mag.to_s) 
     info_win.refresh
   end
 

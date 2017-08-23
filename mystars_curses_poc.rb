@@ -91,6 +91,16 @@ begin
       # Shift-Tab, cycle through objects
       MyStarsWindows.selectPrev(win, info_win)
       MyStarsWindows.updateTargetInfo(info_win)
+    when 'm'
+      # Decrease magnitude filter (show more)
+      App::Settings.vis_mag += 1
+      MyStarsWindows.drawWindow(win)
+      MyStarsWindows.updateVisMag(info_win)
+    when 'M'
+      # Increase magnitude filter (show less)
+      App::Settings.vis_mag -= 1
+      MyStarsWindows.drawWindow(win)
+      MyStarsWindows.updateVisMag(info_win)
     when Curses::Key::LEFT
       App::Settings.centerx -= 1
       MyStarsWindows.drawWindow(win)

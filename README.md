@@ -27,7 +27,7 @@ Basically, the usual planetarium stuff, like:
 * ~~Scrolling around~~
 * ~~Zooming in~~
 * ~~Selecting objects on the current screen and getting info on them~~
-* Filtering by magnitude and other properties.
+* ~~Filtering by magnitude~~ and other properties.
 * Drawing constellation lines
 * More stars and non-fixed objects (planets, comets, sun, moon, etc.).
 
@@ -44,6 +44,7 @@ I'd really like a perspective view like Stellarium and other software displays, 
 * Refactored current settings like magnitide and current center info single settings object.
 * No more prompt for a star to initially center on, goes right to zenith
 * Can select stars, and get basic info in info panel
+* Filter by magnitude with m and M.
 
 ### Data Sources:
 
