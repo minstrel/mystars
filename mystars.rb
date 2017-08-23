@@ -228,24 +228,45 @@ class MyStarsWindows < MyStars
     info_win.addstr("Field of View N/S:")
     info_win.setpos(2,0)
     info_win.addstr(App::Settings.mag.to_s + " degrees")
-    info_win.setpos(19,0)
+    info_win.setpos(36,0)
     info_win.addstr("Longitude:")
-    info_win.setpos(20,0)
+    info_win.setpos(37,0)
     info_win.addstr(App::Settings.lon.to_s)
-    info_win.setpos(21,0)
+    info_win.setpos(38,0)
     info_win.addstr("Latitude")
-    info_win.setpos(22,0)
+    info_win.setpos(39,0)
     info_win.addstr(App::Settings.lat.to_s)
-    info_win.setpos(27,0)
+    info_win.setpos(12,0)
     info_win.addstr("Current Object")
-    info_win.setpos(28,0)
+    info_win.setpos(13,0)
     info_win.addstr("Name:")
-    info_win.setpos(30,0)
+    info_win.setpos(15,0)
     info_win.addstr("Designation:")
-    info_win.setpos(32,0)
+    info_win.setpos(17,0)
     info_win.addstr("RA / Dec:")
-    info_win.setpos(34,0)
+    info_win.setpos(19,0)
     info_win.addstr("Alt / Az:")
+    info_win.refresh
+  end
+
+  def self.updateTargetInfo(info_win)
+    star = App::Settings.in_view.members[App::Settings.in_view.selected]
+    name = star.name.to_s
+    desig = star.desig.to_s + " " + star.con
+    radec = star.ra.round(2).to_s + + " / " + star.dec.round(2).to_s
+    altaz = star.alt.round(2).to_s + " / " + star.az.round(2).to_s
+    info_win.setpos(14,0)
+    info_win.clrtoeol
+    info_win.addstr(name)
+    info_win.setpos(16,0)
+    info_win.clrtoeol
+    info_win.addstr(desig)
+    info_win.setpos(18,0)
+    info_win.clrtoeol
+    info_win.addstr(radec)
+    info_win.setpos(20,0)
+    info_win.clrtoeol
+    info_win.addstr(altaz)
     info_win.refresh
   end
 
@@ -257,14 +278,14 @@ class MyStarsWindows < MyStars
   end
 
   def self.updateLon(info_win)
-    info_win.setpos(20,0)
+    info_win.setpos(37,0)
     info_win.clrtoeol
     info_win.addstr(App::Settings.lon.to_s)
     info_win.refresh
   end
 
   def self.updateLat(info_win)
-    info_win.setpos(22,0)
+    info_win.setpos(39,0)
     info_win.clrtoeol
     info_win.addstr(App::Settings.lat.to_s)
     info_win.refresh
@@ -348,27 +369,6 @@ class MyStarsWindows < MyStars
     win.attrset(Curses::A_REVERSE)
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
-  end
-
-  def self.updateTargetInfo(info_win)
-    star = App::Settings.in_view.members[App::Settings.in_view.selected]
-    name = star.name.to_s
-    desig = star.desig.to_s + " " + star.con
-    radec = star.ra.round(2).to_s + + " / " + star.dec.round(2).to_s
-    altaz = star.alt.round(2).to_s + " / " + star.az.round(2).to_s
-    info_win.setpos(29,0)
-    info_win.clrtoeol
-    info_win.addstr(name)
-    info_win.setpos(31,0)
-    info_win.clrtoeol
-    info_win.addstr(desig)
-    info_win.setpos(33,0)
-    info_win.clrtoeol
-    info_win.addstr(radec)
-    info_win.setpos(35,0)
-    info_win.clrtoeol
-    info_win.addstr(altaz)
-    info_win.refresh
   end
 
 end
