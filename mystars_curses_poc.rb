@@ -84,9 +84,13 @@ begin
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateMag(info_win)
     when 9
+      # Tab, cycle through objects
       MyStarsWindows.selectNext(win, info_win)
+      MyStarsWindows.updateTargetInfo(info_win)
     when Curses::Key::BTAB
+      # Shift-Tab, cycle through objects
       MyStarsWindows.selectPrev(win, info_win)
+      MyStarsWindows.updateTargetInfo(info_win)
     when Curses::Key::LEFT
       App::Settings.centerx -= 1
       MyStarsWindows.drawWindow(win)
