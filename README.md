@@ -26,16 +26,20 @@ Zoom in and out with -/+.
 
 Filter visible stars by magnitude with m/M.
 
+Tab through stars on the current viewport with tab and shift-tab.
+
 Most screens will appear stretched vertically (ie North - South).  This is an artifact of most fonts being rectangular, as spacing is done by row and column count, not font size. Installing a square font will mostly correct for this although line spacing may still cause some stretch.
 
 Hit enter key to exit.
 
-### To implement
+### Features to implement
 
 Some very basic features are now present.  A small and not comprehensive list of what I have in mind next includes:
 
 * Manual input of time, periodic updates, fast forward/reverse.
 * Additional filters, and moving similar toggleable settings to a popup window.
+* Search window.
+* ~~Help window.~~
 * Drawing constellation lines.
 * Adding more stars and non-fixed objects (planets, comets, sun, moon, etc.).
 * Beginnings of a nicer "look", including colors and displaying different icons for stars dependant on magnitude range.  Also separate icons for DSOs once those are in.
@@ -56,6 +60,9 @@ While I originally wanted to get a perspective view going, I think I'm going to 
 * No more prompt for a star to initially center on, goes right to zenith
 * Can select stars, and get basic info in info panel
 * Filter by magnitude with m and M.
+
+0.0.3
+* Help window added.
 
 ### Data Sources:
 

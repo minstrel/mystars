@@ -51,9 +51,10 @@ begin
   Curses.noecho
   # No cursor
   Curses.curs_set(0)
+  # Main input loop
   while input = win.getch
     case input
-    when 10
+    when 'q'
       break
     when "+"
       # Plus sign, zooms in
@@ -101,6 +102,9 @@ begin
       App::Settings.vis_mag -= 1
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateVisMag(info_win)
+    when 'h'
+      # Help screen
+      MyStarsWindows.help
     when Curses::Key::LEFT
       App::Settings.centerx -= 1
       MyStarsWindows.drawWindow(win)
@@ -113,9 +117,6 @@ begin
     when Curses::Key::DOWN
       App::Settings.centery += 1
       MyStarsWindows.drawWindow(win)
-    end
-    if input == 10
-      break
     end
   end
 ensure

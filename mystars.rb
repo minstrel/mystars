@@ -385,4 +385,26 @@ class MyStarsWindows < MyStars
     win.attrset(Curses::A_NORMAL)
   end
 
+  def self.help
+    # Help screen popup with command key list
+    win = Curses.stdscr
+    helpwin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
+    helpwin.box("|","-")
+    helpwin.setpos(2,2)
+    helpwin.addstr("Arrow keys move around")
+    helpwin.setpos(3,2)
+    helpwin.addstr("(M) and (m) to filter by magnitude.")
+    helpwin.setpos(4,2)
+    helpwin.addstr("(+) and (-) to zoom in and out")
+    helpwin.setpos(5,2)
+    helpwin.addstr("Tab and Shift-Tab to cycle through visible objects")
+    helpwin.setpos(10,2)
+    helpwin.addstar("(q) to quit")
+    helpwin.refresh
+    helpwin.getch
+    helpwin.clear
+    helpwin.refresh
+    helpwin.close
+  end
+
 end
