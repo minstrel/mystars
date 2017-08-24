@@ -23,8 +23,23 @@ module App
   # Current settings - this is probably badly named...
   # :mag is magnification, not magnitude (that was a bad choice, rename
   # it sometime)
-  AppSettings = Struct.new(:mag, :vis_mag, :centery, :centerx, :collection, :lat, :lon, :in_view)
-  Settings = AppSettings.new(10, 6, 90, 90, nil, nil, nil, nil)
+  # mag - field of view in degrees N-S
+  # vis_mag - dimmest magnitude visible
+  # centery - N-S location in degrees to center on
+  # centerx - E-W location in degrees to center on
+  # collection - MyStarsStars collection in current database
+  # lat - user latitude
+  # lon - user longitude
+  # in_view - MyStarsStars collection in current viewscreen
+  # timer - delay, in seconds, before timer thread attempts to request a
+  #   refresh of both collection and in_view
+  # selected_id star.id # of the currently selected star.  When we clean up
+  #   the input files, a new id unique to this application should probably
+  #   get written, as I don't know if id will always be there or be reliable
+  #   for tracking every object
+  AppSettings = Struct.new(:mag, :vis_mag, :centery, :centerx, :collection, :lat, :lon, :in_view, :timer, :selected_id)
+  Settings = AppSettings.new(10, 6, 0, 0, nil, nil, nil, nil, 5, nil)
+
 end
 
 class MyStars
@@ -307,6 +322,36 @@ class MyStarsWindows < MyStars
     info_win.refresh
   end
 
+  def self.selectID(win, info_win)
+    star = App::Settings.in_view.members.find { |object| object.id == App::Settings.selected_id }
+
+    star_selection_index = App::Settings.in_view.members.find_index(star)
+
+    if star
+      mag = App::Settings.mag
+      centery = App::Settings.centery
+      centerx = App::Settings.centerx
+      miny = centery - (mag / 2.0)
+      maxy = centery + (mag / 2.0)
+      xrange = (win.maxx.to_f / win.maxy.to_f) * mag.to_f
+      minx = centerx - (xrange / 2.0)
+      maxx = centerx + (xrange / 2.0)
+      # Set currently selected
+      App::Settings.in_view.selected = star_selection_index
+      # Figure out the y position on current screen
+      ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
+      # Figure out the x position on current screen
+      xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+      win.setpos(ypos,xpos)
+      # Make highlighting prettier later, use init_pairs and stuff
+      win.attrset(Curses::A_REVERSE)
+      win.addstr("*")
+      win.attrset(Curses::A_NORMAL)
+      win.refresh
+      MyStarsWindows.updateTargetInfo(info_win)
+    end 
+  end
+
   def self.selectNext(win, info_win)
     # I'm repeating a lot of code from drawWindow here, should probably put
     # current objects into some sort of container with x and y positions.
@@ -336,6 +381,8 @@ class MyStarsWindows < MyStars
       App::Settings.in_view.selected += 1
     end
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
+    # Set targeted ID so we can highlight it again after refresh
+    App::Settings.selected_id = star.id
     # Figure out the y position on current screen
     ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
     # Figure out the x position on current screen
@@ -377,6 +424,8 @@ class MyStarsWindows < MyStars
       App::Settings.in_view.selected -= 1
     end
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
+    # Set targeted ID so we can highlight it again after refresh
+    App::Settings.selected_id = star.id
     # Figure out the y position on current screen
     ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
     # Figure out the x position on current screen

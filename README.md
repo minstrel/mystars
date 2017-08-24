@@ -36,7 +36,7 @@ Hit enter key to exit.
 
 Some very basic features are now present.  A small and not comprehensive list of what I have in mind next includes:
 
-* Manual input of time, periodic updates, fast forward/reverse.
+* Manual input of time, ~~periodic updates~~, fast forward/reverse.
 * Additional filters, and moving similar toggleable settings to a popup window.
 * Search window.
 * ~~Help window.~~
@@ -63,6 +63,9 @@ While I originally wanted to get a perspective view going, I think I'm going to 
 
 0.0.3
 * Help window added.
+* User input and main program broken into threads to enable automatic timer.
+* Timer thread added, default to 5 seconds.
+* Currently selected object now stays selected when panning, zooming, filtering and as time progresses.  There might be some bugs here but nothing's jumped out yet.
 
 ### Data Sources:
 

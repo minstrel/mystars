@@ -4,7 +4,10 @@
 require 'curses'
 require_relative 'mystars'
 
+# Main queue to receive user requests as well as timers and other input.
 main_input = Queue.new
+# Queue for main thread to tell timer thread it's ok to send another request.
+ok_timer = Queue.new
 
 Curses.init_screen
 begin
@@ -15,7 +18,7 @@ begin
   MyStarsWindows.drawInfo(info_win)
   # Allow arrow key / keypad input
   win.keypad = true
-  # Get the users lon and lat and the hipp. number they want to center on
+  # Get the users lon and lat
   win.setpos(win.maxy / 2, 5)
   win.addstr("Enter your longitude as decimal degrees, West is negative")
   win.setpos(win.maxy / 2 + 1, 5)
@@ -26,33 +29,14 @@ begin
   win.setpos(win.maxy / 2 + 3, 5)
   App::Settings.lat = win.getstr.to_f
   MyStarsWindows.updateLat(info_win)
-  #win.setpos(win.maxy / 2 + 4, 5)
-  #win.addstr("Enter Hipparcos number on which to center")
-  #win.setpos(win.maxy / 2 + 5, 5)
-  #id = win.getstr.to_i
-  # Create a new collection based on mag 6 and brighter
-  App::Settings.collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json', :encoding => 'UTF-8'))
-  # Create a new local geolocation
-  geo = MyStarsGeo.new(App::Settings.lon, App::Settings.lat)
-  # Add alt and azi data to the collection
-  App::Settings.collection.localize(geo)
-  # Remove stars below the horizon
-  App::Settings.collection.members.select! { |star| star.alt > 0 }
-  # Plot them on x and y axis, circular star map style (hopefully!)
-  App::Settings.collection.plot_on_circle
-  # Get the x and y of the requested origin star
-  #origin = App::Settings.collection.members.find { |x| x.id == id }
-  App::Settings.centery = 0
-  App::Settings.centerx = 0
-  # Sets magnification to initial North-South value in degrees
-  # Moved to App::Settings
-  # mag = 10
-  # Draw a window centered around the input coords
-  MyStarsWindows.drawWindow(win)
   # Don't echo input
   Curses.noecho
   # No cursor
   Curses.curs_set(0)
+  # Trigger initial update
+  # Make sure this stays above user input thread, so the screen always gets
+  # drawn before anything else happens.
+  main_input << "update"
   # User input thread
   user_input = Thread.new do
     begin
@@ -63,9 +47,36 @@ begin
       Curses.close_screen
     end
   end
+  # Timer thread, to automatically update the time and view
+  # As soon as main thread reports "OK" that it's finished an update,
+  # timer waits selected amount of time, then requests another.  This
+  # will result in that time being slightly longer, on average.
+  timer = Thread.new do
+    loop do
+      while ok_timer.pop
+        sleep(App::Settings.timer)
+        main_input << "update"
+      end
+    end
+  end
   # Main input loop
   while input = main_input.pop
     case input
+    when 'update'
+      # Create a new collection based on mag 6 and brighter
+      App::Settings.collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json', :encoding => 'UTF-8'))
+      # Create a new local geolocation
+      geo = MyStarsGeo.new(App::Settings.lon, App::Settings.lat)
+      # Add alt and azi data to the collection
+      App::Settings.collection.localize(geo)
+      # Remove stars below the horizon
+      App::Settings.collection.members.select! { |star| star.alt > 0 }
+      # Plot them on x and y axis, circular star map style (hopefully!)
+      App::Settings.collection.plot_on_circle
+      # Draw a window centered around the input coords
+      MyStarsWindows.drawWindow(win)
+      MyStarsWindows.selectID(win, info_win)
+      ok_timer << "OK"
     when 'q'
       break
     when "+"
@@ -82,6 +93,7 @@ begin
       end
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateMag(info_win)
+      MyStarsWindows.selectID(win, info_win)
     when "-"
       # Minus sign, zooms out
       case App::Settings.mag
@@ -96,6 +108,7 @@ begin
       end
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateMag(info_win)
+      MyStarsWindows.selectID(win, info_win)
     when 9
       # Tab, cycle through objects
       MyStarsWindows.selectNext(win, info_win)
@@ -109,29 +122,36 @@ begin
       App::Settings.vis_mag += 1
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateVisMag(info_win)
+      MyStarsWindows.selectID(win, info_win)
     when 'M'
       # Increase magnitude filter (show less)
       App::Settings.vis_mag -= 1
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateVisMag(info_win)
+      MyStarsWindows.selectID(win, info_win)
     when 'h'
       # Help screen
       MyStarsWindows.help
     when Curses::Key::LEFT
       App::Settings.centerx -= 1
       MyStarsWindows.drawWindow(win)
+      MyStarsWindows.selectID(win, info_win)
     when Curses::Key::RIGHT
       App::Settings.centerx += 1
       MyStarsWindows.drawWindow(win)
+      MyStarsWindows.selectID(win, info_win)
     when Curses::Key::UP
       App::Settings.centery -= 1
       MyStarsWindows.drawWindow(win)
+      MyStarsWindows.selectID(win, info_win)
     when Curses::Key::DOWN
       App::Settings.centery += 1
       MyStarsWindows.drawWindow(win)
+      MyStarsWindows.selectID(win, info_win)
     end
   end
 ensure
   user_input.kill
+  timer.kill
   Curses.close_screen
 end
