@@ -4,6 +4,8 @@
 require 'curses'
 require_relative 'mystars'
 
+main_input = Queue.new
+
 Curses.init_screen
 begin
   # Initialize main display window
@@ -51,8 +53,18 @@ begin
   Curses.noecho
   # No cursor
   Curses.curs_set(0)
+  # User input thread
+  user_input = Thread.new do
+    begin
+    while from_user = win.getch
+      main_input << from_user
+    end
+    ensure
+      Curses.close_screen
+    end
+  end
   # Main input loop
-  while input = win.getch
+  while input = main_input.pop
     case input
     when 'q'
       break
@@ -120,5 +132,6 @@ begin
     end
   end
 ensure
+  user_input.kill
   Curses.close_screen
 end

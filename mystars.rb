@@ -220,6 +220,8 @@ class MyStarsWindows < MyStars
       a.circ_y * 200 - a.circ_x <=> b.circ_y * 200 - b.circ_x
     end
     
+    win.refresh
+
   end 
 
   # We could store locations of info win lines as variables and reference
@@ -343,6 +345,7 @@ class MyStarsWindows < MyStars
     win.attrset(Curses::A_REVERSE)
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
+    win.refresh
   end
 
   def self.selectPrev(win, info_win)
@@ -383,6 +386,7 @@ class MyStarsWindows < MyStars
     win.attrset(Curses::A_REVERSE)
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
+    win.refresh
   end
 
   def self.help
