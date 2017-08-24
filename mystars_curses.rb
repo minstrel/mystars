@@ -112,11 +112,9 @@ begin
     when 9
       # Tab, cycle through objects
       MyStarsWindows.selectNext(win, info_win)
-      MyStarsWindows.updateTargetInfo(info_win)
     when Curses::Key::BTAB
       # Shift-Tab, cycle through objects
       MyStarsWindows.selectPrev(win, info_win)
-      MyStarsWindows.updateTargetInfo(info_win)
     when 'm'
       # Decrease magnitude filter (show more)
       App::Settings.vis_mag += 1

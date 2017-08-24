@@ -356,6 +356,9 @@ class MyStarsWindows < MyStars
     # I'm repeating a lot of code from drawWindow here, should probably put
     # current objects into some sort of container with x and y positions.
     # Also need to add something here to handle errors, like no stars visible.
+    if App::Settings.in_view.members.empty?
+      return nil
+    end
     mag = App::Settings.mag
     centery = App::Settings.centery
     centerx = App::Settings.centerx
@@ -393,12 +396,16 @@ class MyStarsWindows < MyStars
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
     win.refresh
+    MyStarsWindows.updateTargetInfo(info_win)
   end
 
   def self.selectPrev(win, info_win)
     # I'm repeating a lot of code from drawWindow here, should probably put
     # current objects into some sort of container with x and y positions.
     # Also need to add something here to handle errors, like no stars visible.
+    if App::Settings.in_view.members.empty?
+      return nil
+    end
     mag = App::Settings.mag
     centery = App::Settings.centery
     centerx = App::Settings.centerx
@@ -436,6 +443,7 @@ class MyStarsWindows < MyStars
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
     win.refresh
+    MyStarsWindows.updateTargetInfo(info_win)
   end
 
   def self.help
