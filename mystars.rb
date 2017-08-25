@@ -70,7 +70,7 @@ end
 
 class MyStarsGeo < MyStars
 
-  attr_accessor :jd, :jda, :t, :gmst, :gast, :last, :lat
+  attr_accessor :time, :jd, :jda, :t, :gmst, :gast, :last, :lat
   
   # Initialize method takes the local latitude and longitude (as decimal
   # degrees) as input and using the current time creates an object
@@ -78,14 +78,20 @@ class MyStarsGeo < MyStars
   # This calculation is based on the USNO's calculations here:
   # http://aa.usno.navy.mil/faq/docs/GAST.php
 
-  def initialize(local_lon, local_lat, jd=nil)
+  # Need to adjust the jd argument for initialize to a DateTime object,
+  # since we are using this to display the current date and tim in the info
+  # window.
+
+  def initialize(local_lon, local_lat, time=nil)
     # Local latitude setter, north is positive
     @lat = local_lat
     # Express local_lon as negative for west, positive for east
     @lon = local_lon
+    # Current DateTime, either specified else now
+    @time = if time then time else DateTime.now end
     # Julian Day, either specified (optional)
     # else current Julian Day, fractional
-    @jd = if jd then jd else DateTime.now.ajd.to_f end
+    @jd = if time then time.ajd.to_f else @time.ajd.to_f end
     # Julian Days since 1 Jan 2000 at 12 UTC
     @jda = @jd - 2451545.0
     # Julian centuries since 1 Jan 2000 at 12 UTC
@@ -270,6 +276,20 @@ class MyStarsWindows < MyStars
     info_win.addstr("RA / Dec:")
     info_win.setpos(19,0)
     info_win.addstr("Alt / Az:")
+    info_win.setpos(41,0)
+    info_win.addstr("Date")
+    info_win.setpos(43,0)
+    info_win.addstr("Time")
+    info_win.refresh
+  end
+
+  def self.updateTime(info_win,geo)
+    info_win.setpos(42,0)
+    info_win.clrtoeol
+    info_win.addstr(geo.time.strftime("%Y-%m-%d"))
+    info_win.setpos(44,0)
+    info_win.clrtoeol
+    info_win.addstr(geo.time.strftime("%H:%M:%S"))
     info_win.refresh
   end
 

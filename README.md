@@ -66,6 +66,7 @@ While I originally wanted to get a perspective view going, I think I'm going to 
 * User input and main program broken into threads to enable automatic timer.
 * Timer thread added, default to 5 seconds.
 * Currently selected object now stays selected when panning, zooming, filtering and as time progresses.  There might be some bugs here but nothing's jumped out yet.
+* Time added to info bar, reflects time as shown in main window
 
 ### Data Sources:
 

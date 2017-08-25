@@ -76,6 +76,9 @@ begin
       # Draw a window centered around the input coords
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.selectID(win, info_win)
+      # If we're updating the geospacial date, time has likely changed too,
+      # so update that
+      MyStarsWindows.updateTime(info_win,geo) 
       ok_timer << "OK"
     when 'q'
       break
