@@ -41,7 +41,12 @@ begin
   user_input = Thread.new do
     begin
     while from_user = win.getch
+      if from_user == 'h'
+        main_input << from_user
+        Thread.stop
+      else
       main_input << from_user
+      end
     end
     ensure
       Curses.close_screen
@@ -133,6 +138,7 @@ begin
     when 'h'
       # Help screen
       MyStarsWindows.help
+      user_input.wakeup
     when Curses::Key::LEFT
       App::Settings.centerx -= 1
       MyStarsWindows.drawWindow(win)

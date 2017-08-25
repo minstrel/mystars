@@ -480,7 +480,7 @@ class MyStarsWindows < MyStars
     helpwin.setpos(5,2)
     helpwin.addstr("Tab and Shift-Tab to cycle through visible objects")
     helpwin.setpos(10,2)
-    helpwin.addstar("(q) to quit")
+    helpwin.addstr("(q) to quit")
     helpwin.refresh
     helpwin.getch
     helpwin.clear

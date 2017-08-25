@@ -67,6 +67,7 @@ While I originally wanted to get a perspective view going, I think I'm going to 
 * Timer thread added, default to 5 seconds.
 * Currently selected object now stays selected when panning, zooming, filtering and as time progresses.  There might be some bugs here but nothing's jumped out yet.
 * Time added to info bar, reflects time as shown in main window
+* Help screen no longer hangs application.  Hacky fix that pauses the normal input thread and then resumes it.
 
 ### Data Sources:
 
