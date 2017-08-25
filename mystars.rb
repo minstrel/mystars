@@ -466,6 +466,17 @@ class MyStarsWindows < MyStars
     MyStarsWindows.updateTargetInfo(info_win)
   end
 
+  def self.search
+    win = Curses.stdscr
+    searchwin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
+    searchwin.box("|","-")
+    searchwin.refresh
+    sleep(5)
+    searchwin.clear
+    searchwin.refresh
+    searchwin.close
+  end
+
   def self.help
     # Help screen popup with command key list
     win = Curses.stdscr

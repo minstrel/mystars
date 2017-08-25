@@ -139,6 +139,9 @@ begin
       # Help screen
       MyStarsWindows.help
       user_input.wakeup
+    when 's'
+      # Search screen
+      MyStarsWindows.search
     when Curses::Key::LEFT
       App::Settings.centerx -= 1
       MyStarsWindows.drawWindow(win)
