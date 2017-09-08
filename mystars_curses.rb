@@ -75,11 +75,13 @@ begin
       # Add alt and azi data to the collection
       App::Settings.collection.localize(geo)
       # Remove stars below the horizon
-      App::Settings.collection.members.select! { |star| star.alt > 0 }
+      # App::Settings.collection.members.select! { |star| star.alt > 0 }
       # Plot them on x and y axis, circular star map style (hopefully!)
-      App::Settings.collection.plot_on_circle
+      # App::Settings.collection.plot_on_circle
       # Draw a window centered around the input coords
       MyStarsWindows.drawWindow(win)
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectID(win, info_win)
       # If we're updating the geospacial date, time has likely changed too,
       # so update that
@@ -101,6 +103,8 @@ begin
       end
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateMag(info_win)
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectID(win, info_win)
     when "-"
       # Minus sign, zooms out
@@ -116,24 +120,34 @@ begin
       end
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateMag(info_win)
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectID(win, info_win)
     when 9
       # Tab, cycle through objects
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectNext(win, info_win)
     when Curses::Key::BTAB
       # Shift-Tab, cycle through objects
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectPrev(win, info_win)
     when 'm'
       # Decrease magnitude filter (show more)
       App::Settings.vis_mag += 1
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateVisMag(info_win)
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectID(win, info_win)
     when 'M'
       # Increase magnitude filter (show less)
       App::Settings.vis_mag -= 1
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateVisMag(info_win)
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectID(win, info_win)
     when 'h'
       # Help screen
@@ -143,20 +157,32 @@ begin
       # Search screen
       MyStarsWindows.search
     when Curses::Key::LEFT
-      App::Settings.centerx -= 1
+      #App::Settings.centerx -= 1
+      MyStarsWindows.move(:left)
       MyStarsWindows.drawWindow(win)
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectID(win, info_win)
     when Curses::Key::RIGHT
-      App::Settings.centerx += 1
+      #App::Settings.centerx += 1
+      MyStarsWindows.move(:right)
       MyStarsWindows.drawWindow(win)
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectID(win, info_win)
     when Curses::Key::UP
-      App::Settings.centery -= 1
+      #App::Settings.centery -= 1
+      MyStarsWindows.move(:up)
       MyStarsWindows.drawWindow(win)
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectID(win, info_win)
     when Curses::Key::DOWN
-      App::Settings.centery += 1
+      #App::Settings.centery += 1
+      MyStarsWindows.move(:down)
       MyStarsWindows.drawWindow(win)
+      # TEMPORARILY DISABLED
+      # While I make sure new 3d draw is working
       MyStarsWindows.selectID(win, info_win)
     end
   end

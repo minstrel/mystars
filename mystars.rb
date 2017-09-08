@@ -2,6 +2,7 @@
 
 require 'date'
 require 'json'
+require_relative '3d_engine'
 
 class Numeric
   def to_rad
@@ -17,6 +18,13 @@ class Numeric
       self / 15
     end
   end
+end
+
+def testcollection
+  collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json', :encoding => 'UTF-8'))
+  geo = MyStarsGeo.new(-71.5,43.2)
+  collection.localize(geo)
+  collection
 end
 
 module App
@@ -37,8 +45,10 @@ module App
   #   the input files, a new id unique to this application should probably
   #   get written, as I don't know if id will always be there or be reliable
   #   for tracking every object
-  AppSettings = Struct.new(:mag, :vis_mag, :centery, :centerx, :collection, :lat, :lon, :in_view, :timer, :selected_id)
-  Settings = AppSettings.new(10, 6, 0, 0, nil, nil, nil, nil, 5, nil)
+  # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
+  # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
+  AppSettings = Struct.new(:mag, :vis_mag, :centery, :centerx, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y)
+  Settings = AppSettings.new(10, 6, 0, 0, nil, nil, nil, nil, 5, nil, 0, 10)
 
 end
 
@@ -149,16 +159,15 @@ class MyStarsGeo < MyStars
     end
   end
 
-  def aa(ra,dec)
-    puts "Altitude is " + self.altitude(ra,dec).to_s
-    puts "Azimuth is " + self.azimuth(ra,dec).to_s
-  end
-
 end
 
 class MyStarsStar < MyStars
   # This represents a single star
-  attr_accessor :id, :name, :mag, :desig, :con, :ra, :dec, :alt, :az, :circ_x, :circ_y
+  #
+  # cart_world is the cartesian coordinate column vector in the world
+  # cart_proj is the cartesian coordinate column_vector in the current
+  # projection
+  attr_accessor :id, :name, :mag, :desig, :con, :ra, :dec, :alt, :az, :cart_world, :cart_proj, :circ_x, :circ_y
 end
 
 class MyStarsStars < MyStars
@@ -173,6 +182,10 @@ class MyStarsStars < MyStars
     self.members.each do |star|
       star.alt = geo.altitude(star.ra, star.dec)
       star.az = geo.azimuth(star.ra, star.dec)
+      cz = - ( Math.cos(star.alt.to_rad) * Math.cos(star.az.to_rad) )
+      cy = Math.sin(star.alt.to_rad)
+      cx = Math.cos(star.alt.to_rad) * Math.sin(star.az.to_rad)
+      star.cart_world = Matrix.column_vector([cx,cy,cz,1])
     end
   end
   def plot_on_circle
@@ -187,6 +200,36 @@ class MyStarsWindows < MyStars
   # Methods to use to draw and navigate curses windows
   # These should probably get moved to a module at some point.
 
+  # Increment current camera angle
+  def self.move(direction)
+    case direction
+    when :up
+      if App::Settings.facing_y == -90
+        nil
+      else
+        App::Settings.facing_y -= 1
+      end
+    when :down
+      if App::Settings.facing_y == 90
+        nil
+      else
+        App::Settings.facing_y += 1
+      end
+    when :left
+      if App::Settings.facing_xz == 359
+        App::Settings.facing_xz = 0
+      else
+        App::Settings.facing_xz += 1
+      end
+    when :right
+      if App::Settings.facing_xz == 0
+        App::Settings.facing_xz = 359
+      else
+        App::Settings.facing_xz -= 1
+      end
+    end
+  end
+
   def self.drawWindow(win)
     # This is probably inefficent as it polls all available stars, but
     # hopefully good enough for now.
@@ -197,48 +240,48 @@ class MyStarsWindows < MyStars
     # Iterate through visible stars and try to plot on current screen,
     # given 10 degrees FOV N-S (IE y axis) and enough to fill E-W (x axis)
 
-    mag = App::Settings.mag
-    centery = App::Settings.centery
-    centerx = App::Settings.centerx
+    # Filter out stars below visible magnitude
     collection = App::Settings.collection.members.select { |member| member.mag <= App::Settings.vis_mag }
 
-    miny = centery - (mag / 2.0)
-    maxy = centery + (mag / 2.0)
-    xrange = (win.maxx.to_f / win.maxy.to_f) * mag.to_f
-    minx = centerx - (xrange / 2.0)
-    maxx = centerx + (xrange / 2.0)
-    win.clear
+    # Get desired viewing range in degrees
+    mag = App::Settings.mag
 
     # If we're drawing a window, the in_view stars have moved, so clear it
     App::Settings.in_view = MyStarsStars.new
 
+    # Multiply each star by the view and projection matrix, add in-view stars
+    # to in_view collection
+    view = Stars3D.view(0,0,0,App::Settings.facing_y.to_rad,0,App::Settings.facing_xz.to_rad)
+    width = ((win.maxx.to_f / win.maxy.to_f) * mag).to_rad
+    height = mag.to_rad
+    projection = Stars3D.projection(width, height, 0.25, 1.0)
+    pv = projection * view
     collection.each do |star|
-      if (star.circ_y.between?(miny,maxy)) && (star.circ_x.between?(minx,maxx))
-        # Figure out the y position on current screen
-        ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
-        # Figure out the x position on current screen
-        xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
-        win.setpos(ypos,xpos)
-        win.addstr("*")
-        win.setpos(ypos+1,xpos)
-        #Make this more fine grained / toggleable later.  Right now it's
-        #useful for making sure we're looking at the right stuff.
-        #Text wrapping around was annoying me, so quicky fix in the
-        #if statement.
-        if (xpos + (star.desig + " " + star.con).length) > win.maxx
-          win.setpos(ypos+1, win.maxx - (star.desig + "  " + star.con).length)
-        end
-        win.addstr(star.desig + " " + star.con)
-        # Add it to the stars in_view
-        # Use the x,y coords as a key for easy sorting into tab collection.
+      star.cart_proj = pv * star.cart_world
+      if star.cart_proj[0,0].between?(-1,1) && star.cart_proj[1,0].between?(-1,1) && star.cart_proj[2,0].between?(-1,1)
         App::Settings.in_view.members << star
       end
+    end
+
+    # Clear the window and draw the in-view members
+    win.clear
+    App::Settings.in_view.members.each do |star|
+      xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+      ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
+      win.setpos(ypos,xpos)
+      win.addstr("*")
+      win.setpos(ypos+1,xpos)
+      # This is to fix text wrapping, not great but good enough for now
+      if (xpos + (star.desig + " " + star.con).length) > win.maxx
+        win.setpos(ypos+1, win.maxx - (star.desig + "  " + star.con).length)
+      end
+      win.addstr(star.desig + " " + star.con)
     end
 
     # Sort the in_view stars by x, then y for tabbing
     # Might be worth benchmarking later...
     App::Settings.in_view.members.sort! do |a, b|
-      a.circ_y * 200 - a.circ_x <=> b.circ_y * 200 - b.circ_x
+      (a.cart_proj[1,0] + 1.0) * 1000 - (a.cart_proj[0,0] + 1.0) <=> (b.cart_proj[1,0] + 1.0) * 1000 - (b.cart_proj[0,0] + 1.0)
     end
     
     win.refresh
@@ -343,27 +386,16 @@ class MyStarsWindows < MyStars
   end
 
   def self.selectID(win, info_win)
+    # Highlight the currently selected object
     star = App::Settings.in_view.members.find { |object| object.id == App::Settings.selected_id }
 
     star_selection_index = App::Settings.in_view.members.find_index(star)
 
     if star
-      mag = App::Settings.mag
-      centery = App::Settings.centery
-      centerx = App::Settings.centerx
-      miny = centery - (mag / 2.0)
-      maxy = centery + (mag / 2.0)
-      xrange = (win.maxx.to_f / win.maxy.to_f) * mag.to_f
-      minx = centerx - (xrange / 2.0)
-      maxx = centerx + (xrange / 2.0)
-      # Set currently selected
       App::Settings.in_view.selected = star_selection_index
-      # Figure out the y position on current screen
-      ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
-      # Figure out the x position on current screen
-      xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+      xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+      ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
       win.setpos(ypos,xpos)
-      # Make highlighting prettier later, use init_pairs and stuff
       win.attrset(Curses::A_REVERSE)
       win.addstr("*")
       win.attrset(Curses::A_NORMAL)
@@ -373,28 +405,15 @@ class MyStarsWindows < MyStars
   end
 
   def self.selectNext(win, info_win)
-    # I'm repeating a lot of code from drawWindow here, should probably put
-    # current objects into some sort of container with x and y positions.
-    # Also need to add something here to handle errors, like no stars visible.
+    # Highlight the next object in current view
     if App::Settings.in_view.members.empty?
       return nil
     end
-    mag = App::Settings.mag
-    centery = App::Settings.centery
-    centerx = App::Settings.centerx
-    miny = centery - (mag / 2.0)
-    maxy = centery + (mag / 2.0)
-    xrange = (win.maxx.to_f / win.maxy.to_f) * mag.to_f
-    minx = centerx - (xrange / 2.0)
-    maxx = centerx + (xrange / 2.0)
     # --- Deselect the previous one
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
-    # Figure out the y position on current screen
-    ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
-    # Figure out the x position on current screen
-    xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+    xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+    ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
     win.setpos(ypos,xpos)
-    # Make highlighting prettier later, use init_pairs and stuff
     win.attrset(Curses::A_NORMAL)
     win.addstr("*")
     # ---
@@ -406,12 +425,9 @@ class MyStarsWindows < MyStars
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
     # Set targeted ID so we can highlight it again after refresh
     App::Settings.selected_id = star.id
-    # Figure out the y position on current screen
-    ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
-    # Figure out the x position on current screen
-    xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+    xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+    ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
     win.setpos(ypos,xpos)
-    # Make highlighting prettier later, use init_pairs and stuff
     win.attrset(Curses::A_REVERSE)
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
@@ -420,28 +436,14 @@ class MyStarsWindows < MyStars
   end
 
   def self.selectPrev(win, info_win)
-    # I'm repeating a lot of code from drawWindow here, should probably put
-    # current objects into some sort of container with x and y positions.
-    # Also need to add something here to handle errors, like no stars visible.
     if App::Settings.in_view.members.empty?
       return nil
     end
-    mag = App::Settings.mag
-    centery = App::Settings.centery
-    centerx = App::Settings.centerx
-    miny = centery - (mag / 2.0)
-    maxy = centery + (mag / 2.0)
-    xrange = (win.maxx.to_f / win.maxy.to_f) * mag.to_f
-    minx = centerx - (xrange / 2.0)
-    maxx = centerx + (xrange / 2.0)
     # ---Deselect the previous one
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
-    # Figure out the y position on current screen
-    ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
-    # Figure out the x position on current screen
-    xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+    xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+    ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxx).round
     win.setpos(ypos,xpos)
-    # Make highlighting prettier later, use init_pairs and stuff
     win.attrset(Curses::A_NORMAL)
     win.addstr("*")
     # ---
@@ -453,12 +455,9 @@ class MyStarsWindows < MyStars
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
     # Set targeted ID so we can highlight it again after refresh
     App::Settings.selected_id = star.id
-    # Figure out the y position on current screen
-    ypos = (((star.circ_y - miny) / (maxy - miny)).abs * win.maxy ).round
-    # Figure out the x position on current screen
-    xpos = (((star.circ_x - minx) / (maxx - minx)).abs * win.maxx ).round
+    xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+    ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxx).round
     win.setpos(ypos,xpos)
-    # Make highlighting prettier later, use init_pairs and stuff
     win.attrset(Curses::A_REVERSE)
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
