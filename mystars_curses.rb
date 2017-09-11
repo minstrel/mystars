@@ -64,12 +64,12 @@ begin
       end
     end
   end
+  # Create a new collection based on mag 6 and brighter
+  App::Settings.collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json', :encoding => 'UTF-8'))
   # Main input loop
   while input = main_input.pop
     case input
     when 'update'
-      # Create a new collection based on mag 6 and brighter
-      App::Settings.collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json', :encoding => 'UTF-8'))
       # Create a new local geolocation
       geo = MyStarsGeo.new(App::Settings.lon, App::Settings.lat)
       # Add alt and azi data to the collection

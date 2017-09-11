@@ -48,6 +48,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * ~~Views below the horizon.~~
 * Toggleable ground layer.
 * Compass points
+* Display current facing
 
 ### Changelog
 
@@ -68,6 +69,9 @@ Some very basic features are now present.  A small and not comprehensive list of
 * Time added to info bar, reflects time as shown in main window
 * Help screen no longer hangs application.  Hacky fix that pauses the normal input thread and then resumes it.
 * Viewer rewritten using a basic 3d engine.  No more flat map, now an actual perspective view allowing full view above and below the horizon.
+
+0.0.4
+
 
 ### Data Sources:
 

@@ -46,7 +46,7 @@ module App
   # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
   # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
   AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y)
-  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 0, -10)
+  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10)
 
 end
 
@@ -165,7 +165,7 @@ class MyStarsStar < MyStars
   # cart_world is the cartesian coordinate column vector in the world
   # cart_proj is the cartesian coordinate column_vector in the current
   # projection
-  attr_accessor :id, :name, :mag, :desig, :con, :ra, :dec, :alt, :az, :cart_world, :cart_proj, :circ_x, :circ_y
+  attr_accessor :id, :name, :mag, :desig, :con, :ra, :dec, :alt, :az, :cart_world, :cart_proj
 end
 
 class MyStarsStars < MyStars
@@ -430,6 +430,7 @@ class MyStarsWindows < MyStars
   end
 
   def self.selectPrev(win, info_win)
+    # Highlight the previous object in current view
     if App::Settings.in_view.members.empty?
       return nil
     end
@@ -460,14 +461,15 @@ class MyStarsWindows < MyStars
   end
 
   def self.search
-    win = Curses.stdscr
-    searchwin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
-    searchwin.box("|","-")
-    searchwin.refresh
-    sleep(5)
-    searchwin.clear
-    searchwin.refresh
-    searchwin.close
+    # Deactivate this for now
+    # win = Curses.stdscr
+    # searchwin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
+    # searchwin.box("|","-")
+    # searchwin.refresh
+    # sleep(5)
+    # searchwin.clear
+    # searchwin.refresh
+    # searchwin.close
   end
 
   def self.help
