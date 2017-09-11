@@ -28,13 +28,11 @@ def testcollection
 end
 
 module App
-  # Current settings - this is probably badly named...
+  # Running settings
   # :mag is magnification, not magnitude (that was a bad choice, rename
   # it sometime)
   # mag - field of view in degrees N-S
   # vis_mag - dimmest magnitude visible
-  # centery - N-S location in degrees to center on
-  # centerx - E-W location in degrees to center on
   # collection - MyStarsStars collection in current database
   # lat - user latitude
   # lon - user longitude
@@ -47,8 +45,8 @@ module App
   #   for tracking every object
   # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
   # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
-  AppSettings = Struct.new(:mag, :vis_mag, :centery, :centerx, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y)
-  Settings = AppSettings.new(10, 6, 0, 0, nil, nil, nil, nil, 5, nil, 0, 10)
+  AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y)
+  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 0, -10)
 
 end
 
@@ -182,17 +180,11 @@ class MyStarsStars < MyStars
     self.members.each do |star|
       star.alt = geo.altitude(star.ra, star.dec)
       star.az = geo.azimuth(star.ra, star.dec)
-      cz = - ( Math.cos(star.alt.to_rad) * Math.cos(star.az.to_rad) )
-      cy = Math.sin(star.alt.to_rad)
-      cx = Math.cos(star.alt.to_rad) * Math.sin(star.az.to_rad)
+      cz = ( Math.cos(star.alt.to_rad) * Math.sin(star.az.to_rad) )
+      cy = Math.sin(star.alt.to_rad) #
+      cx = Math.cos(star.alt.to_rad) * Math.cos(star.az.to_rad)
       star.cart_world = Matrix.column_vector([cx,cy,cz,1])
     end
-  end
-  def plot_on_circle
-    self.members.each do |star|
-      star.circ_x = Math.sin(star.az.to_rad) * (90 - star.alt)
-      star.circ_y = Math.cos(star.az.to_rad) * (90 - star.alt)
-    end 
   end
 end
 
@@ -251,14 +243,14 @@ class MyStarsWindows < MyStars
 
     # Multiply each star by the view and projection matrix, add in-view stars
     # to in_view collection
-    view = Stars3D.view(0,0,0,App::Settings.facing_y.to_rad,0,App::Settings.facing_xz.to_rad)
+    view = Stars3D.view(0,0,0,App::Settings.facing_y.to_rad,App::Settings.facing_xz.to_rad,0)
     width = ((win.maxx.to_f / win.maxy.to_f) * mag).to_rad
     height = mag.to_rad
     projection = Stars3D.projection(width, height, 0.25, 1.0)
     pv = projection * view
     collection.each do |star|
       star.cart_proj = pv * star.cart_world
-      if star.cart_proj[0,0].between?(-1,1) && star.cart_proj[1,0].between?(-1,1) && star.cart_proj[2,0].between?(-1,1)
+      if star.cart_proj[0,0].between?(-1,1) && star.cart_proj[1,0].between?(-1,1) && star.cart_proj[2,0].between?(0,1)
         App::Settings.in_view.members << star
       end
     end
@@ -266,8 +258,8 @@ class MyStarsWindows < MyStars
     # Clear the window and draw the in-view members
     win.clear
     App::Settings.in_view.members.each do |star|
-      xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
-      ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
+      xpos = win.maxx - (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+      ypos = win.maxy - (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
       win.setpos(ypos,xpos)
       win.addstr("*")
       win.setpos(ypos+1,xpos)
@@ -283,6 +275,8 @@ class MyStarsWindows < MyStars
     App::Settings.in_view.members.sort! do |a, b|
       (a.cart_proj[1,0] + 1.0) * 1000 - (a.cart_proj[0,0] + 1.0) <=> (b.cart_proj[1,0] + 1.0) * 1000 - (b.cart_proj[0,0] + 1.0)
     end
+    # Sort it better instead of doing this.
+    App::Settings.in_view.members.reverse!
     
     win.refresh
 
@@ -393,8 +387,8 @@ class MyStarsWindows < MyStars
 
     if star
       App::Settings.in_view.selected = star_selection_index
-      xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
-      ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
+      xpos = win.maxx - (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+      ypos = win.maxy - (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
       win.setpos(ypos,xpos)
       win.attrset(Curses::A_REVERSE)
       win.addstr("*")
@@ -411,8 +405,8 @@ class MyStarsWindows < MyStars
     end
     # --- Deselect the previous one
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
-    xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
-    ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
+    xpos = win.maxx - (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+    ypos = win.maxy - (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
     win.setpos(ypos,xpos)
     win.attrset(Curses::A_NORMAL)
     win.addstr("*")
@@ -425,8 +419,8 @@ class MyStarsWindows < MyStars
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
     # Set targeted ID so we can highlight it again after refresh
     App::Settings.selected_id = star.id
-    xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
-    ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
+    xpos = win.maxx - (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+    ypos = win.maxy - (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
     win.setpos(ypos,xpos)
     win.attrset(Curses::A_REVERSE)
     win.addstr("*")
@@ -441,8 +435,8 @@ class MyStarsWindows < MyStars
     end
     # ---Deselect the previous one
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
-    xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
-    ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxx).round
+    xpos = win.maxx - (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+    ypos = win.maxy - (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
     win.setpos(ypos,xpos)
     win.attrset(Curses::A_NORMAL)
     win.addstr("*")
@@ -455,8 +449,8 @@ class MyStarsWindows < MyStars
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
     # Set targeted ID so we can highlight it again after refresh
     App::Settings.selected_id = star.id
-    xpos = (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
-    ypos = (((star.cart_proj[1,0] + 1) / 2.0) * win.maxx).round
+    xpos = win.maxx - (((star.cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+    ypos = win.maxy - (((star.cart_proj[1,0] + 1) / 2.0) * win.maxy).round
     win.setpos(ypos,xpos)
     win.attrset(Curses::A_REVERSE)
     win.addstr("*")
