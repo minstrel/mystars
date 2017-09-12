@@ -47,6 +47,7 @@ module App
   # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
   AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y)
   Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10)
+  COMPASSPOINTS = {"N" => Matrix.column_vector([1,0,0,1]), "S" => Matrix.column_vector([-1,0,0,1]), "E" => Matrix.column_vector([0,0,1,1]), "W" => Matrix.column_vector([0,0,-1,1])}
 
 end
 
@@ -268,6 +269,17 @@ class MyStarsWindows < MyStars
         win.setpos(ypos+1, win.maxx - (star.desig + "  " + star.con).length)
       end
       win.addstr(star.desig + " " + star.con)
+    end
+
+    # Insert any appropriate compass points
+    App::COMPASSPOINTS.each do |key, value|
+      compass_projection = pv * value 
+      if compass_projection[0,0].between?(-1,1) && compass_projection[1,0].between?(-1,1) && compass_projection[2,0].between?(0,1)
+        xpos = win.maxx - (((compass_projection[0,0] + 1) / 2.0) * win.maxx).round
+        ypos = win.maxy - (((compass_projection[1,0] + 1) / 2.0) * win.maxy).round
+        win.setpos(ypos,xpos)
+        win.addstr(key)
+      end
     end
 
     # Sort the in_view stars by x, then y for tabbing

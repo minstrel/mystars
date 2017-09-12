@@ -47,7 +47,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * Protocols to control Meade and nexStar mounts via serial interface.  This is highly dependant on my actually getting ahold of one to test.  This feels like it should be a "far flung future" feature, but I think I'd like to put it in sooner than later, because I have the feeling that if this application will ever be of use to anyone, it will be as a minimalist, quick and dirty, interface to control mounts that can be run from anywhere with a terminal. 
 * ~~Views below the horizon.~~
 * Toggleable ground layer.
-* Compass points
+* ~~Compass points~~
 * ~~Display current facing~~
 * Change geo location
 
@@ -73,6 +73,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 
 0.0.4
 * Current facing now displayed in info panel
+* NSEW cardinal directions now appear in main window at ground level
 
 ### Data Sources:
 
