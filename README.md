@@ -48,7 +48,8 @@ Some very basic features are now present.  A small and not comprehensive list of
 * ~~Views below the horizon.~~
 * Toggleable ground layer.
 * Compass points
-* Display current facing
+* ~~Display current facing~~
+* Change geo location
 
 ### Changelog
 
@@ -71,7 +72,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * Viewer rewritten using a basic 3d engine.  No more flat map, now an actual perspective view allowing full view above and below the horizon.
 
 0.0.4
-
+* Current facing now displayed in info panel
 
 ### Data Sources:
 

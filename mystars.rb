@@ -295,13 +295,13 @@ class MyStarsWindows < MyStars
     info_win.addstr("Visible magnitude")
     info_win.setpos(4,0)
     info_win.addstr("<= " + App::Settings.vis_mag.to_s)
-    info_win.setpos(36,0)
+    info_win.setpos(32,0)
     info_win.addstr("Longitude:")
-    info_win.setpos(37,0)
+    info_win.setpos(33,0)
     info_win.addstr(App::Settings.lon.to_s)
-    info_win.setpos(38,0)
+    info_win.setpos(34,0)
     info_win.addstr("Latitude")
-    info_win.setpos(39,0)
+    info_win.setpos(35,0)
     info_win.addstr(App::Settings.lat.to_s)
     info_win.setpos(12,0)
     info_win.addstr("Current Object")
@@ -313,11 +313,38 @@ class MyStarsWindows < MyStars
     info_win.addstr("RA / Dec:")
     info_win.setpos(19,0)
     info_win.addstr("Alt / Az:")
+    info_win.setpos(38,0)
+    info_win.addstr("Facing")
+    info_win.setpos(39,0)
+    azimuth = 90 - App::Settings.facing_xz
+    if azimuth < 0
+      azimuth = 360 + azimuth
+    end
+    info_win.addstr("Azimuth: " + azimuth.to_s + " °")
+    info_win.setpos(40,0)
+    info_win.addstr("Altitude: " + (-App::Settings.facing_y).to_s + " °")
     info_win.setpos(41,0)
     info_win.addstr("Date")
     info_win.setpos(43,0)
     info_win.addstr("Time")
     info_win.refresh
+  end
+
+  def self.updateFacing(info_win)
+    info_win.setpos(39,0)
+    info_win.clrtoeol
+    azimuth = 90 - App::Settings.facing_xz
+    if azimuth < 0
+      azimuth = 360 + azimuth
+    end
+    info_win.addstr("Azimuth: " + azimuth.to_s + " °")
+    info_win.setpos(40,0)
+    info_win.clrtoeol
+    info_win.addstr("Altitude: " + (-App::Settings.facing_y).to_s + " °")
+    info_win.refresh
+  # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
+  # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
+  # AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y)
   end
 
   def self.updateTime(info_win,geo)
@@ -366,14 +393,14 @@ class MyStarsWindows < MyStars
   end
 
   def self.updateLon(info_win)
-    info_win.setpos(37,0)
+    info_win.setpos(33,0)
     info_win.clrtoeol
     info_win.addstr(App::Settings.lon.to_s)
     info_win.refresh
   end
 
   def self.updateLat(info_win)
-    info_win.setpos(39,0)
+    info_win.setpos(35,0)
     info_win.clrtoeol
     info_win.addstr(App::Settings.lat.to_s)
     info_win.refresh

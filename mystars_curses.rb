@@ -141,18 +141,22 @@ begin
     when Curses::Key::LEFT
       MyStarsWindows.move(:left)
       MyStarsWindows.drawWindow(win)
+      MyStarsWindows.updateFacing(info_win)
       MyStarsWindows.selectID(win, info_win)
     when Curses::Key::RIGHT
       MyStarsWindows.move(:right)
       MyStarsWindows.drawWindow(win)
+      MyStarsWindows.updateFacing(info_win)
       MyStarsWindows.selectID(win, info_win)
     when Curses::Key::UP
       MyStarsWindows.move(:up)
       MyStarsWindows.drawWindow(win)
+      MyStarsWindows.updateFacing(info_win)
       MyStarsWindows.selectID(win, info_win)
     when Curses::Key::DOWN
       MyStarsWindows.move(:down)
       MyStarsWindows.drawWindow(win)
+      MyStarsWindows.updateFacing(info_win)
       MyStarsWindows.selectID(win, info_win)
     end
   end
