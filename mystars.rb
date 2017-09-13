@@ -182,9 +182,23 @@ class MyStarsStars < MyStars
       star.alt = geo.altitude(star.ra, star.dec)
       star.az = geo.azimuth(star.ra, star.dec)
       cz = ( Math.cos(star.alt.to_rad) * Math.sin(star.az.to_rad) )
-      cy = Math.sin(star.alt.to_rad) #
+      cy = Math.sin(star.alt.to_rad)
       cx = Math.cos(star.alt.to_rad) * Math.cos(star.az.to_rad)
       star.cart_world = Matrix.column_vector([cx,cy,cz,1])
+    end
+  end
+  # Create an array of vectors to draw wire mesh aka constellation lines
+  # between two stars
+  # Simple bresenham algorithm
+  def create_line(s1, s2)
+    if Math.sqrt((s1.cart_proj[0,0].round - s2.cart_proj[0,0].round)**2 + (s1.cart_proj[1,0].round - s2.cart_proj[1,0].round)**2) < 2
+      return []
+    else
+      midx = (s1.cart_proj[0,0] + s2.cart_proj[0,0]) / 2.0
+      midy = (s1.cart_proj[1,0] + s2.cart_proj[1,0]) / 2.0
+      midpoint = MyStarsStar.new
+      midpoint.cart_proj = Matrix.column_vector([midx,midy,0,1])
+      [midpoint] + create_line(s1,midpoint) + create_line(midpoint,s2)
     end
   end
 end
