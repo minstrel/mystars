@@ -434,6 +434,15 @@ class MyStarsWindows < MyStars
     info_win.addstr("Visible magnitude")
     info_win.setpos(4,0)
     info_win.addstr("<= " + App::Settings.vis_mag.to_s)
+    info_win.setpos(7,0)
+    info_win.addstr("Constellations:")
+    info_win.setpos(8,0)
+    case App::Settings.show_constellations
+    when true
+      info_win.addstr("Shown")
+    when false
+      info_win.addstr("Hidden")
+    end
     info_win.setpos(32,0)
     info_win.addstr("Longitude:")
     info_win.setpos(33,0)
@@ -466,6 +475,18 @@ class MyStarsWindows < MyStars
     info_win.addstr("Date")
     info_win.setpos(43,0)
     info_win.addstr("Time")
+    info_win.refresh
+  end
+
+  def self.updateConstellations(info_win)
+    info_win.setpos(8,0)
+    info_win.clrtoeol
+    case App::Settings.show_constellations
+    when true
+      info_win.addstr("Shown")
+    when false
+      info_win.addstr("Hidden")
+    end
     info_win.refresh
   end
 

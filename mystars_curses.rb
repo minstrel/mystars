@@ -137,6 +137,9 @@ begin
       MyStarsWindows.selectID(win, info_win)
     when 'c'
       App::Settings.show_constellations = !App::Settings.show_constellations
+      MyStarsWindows.drawWindow(win)
+      MyStarsWindows.updateConstellations(info_win)
+      MyStarsWindows.selectID(win, info_win)
     when 'h'
       # Help screen
       MyStarsWindows.help
