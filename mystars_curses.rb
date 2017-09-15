@@ -66,14 +66,18 @@ begin
   end
   # Create a new collection based on mag 6 and brighter
   App::Settings.collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json', :encoding => 'UTF-8'))
+  # Get constellation names
+  App::Settings.constellation_names = MyStars.newconstellations('./data/constellations.json')
   # Main input loop
   while input = main_input.pop
     case input
     when 'update'
       # Create a new local geolocation
       geo = MyStarsGeo.new(App::Settings.lon, App::Settings.lat)
-      # Add alt and azi data to the collection
+      # Add alt and azi data to the collection and add it to world matrix
       App::Settings.collection.localize(geo)
+      # Add constellation names to the world matrix
+      App::Settings.constellation_names.each { |con| con.localize(geo) }
       # Draw a window centered around the input coords
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.selectID(win, info_win)
@@ -131,6 +135,8 @@ begin
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateVisMag(info_win)
       MyStarsWindows.selectID(win, info_win)
+    when 'c'
+      App::Settings.show_constellations = !App::Settings.show_constellations
     when 'h'
       # Help screen
       MyStarsWindows.help

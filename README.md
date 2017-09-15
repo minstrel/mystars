@@ -40,6 +40,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * Additional filters, and moving similar toggleable settings to a popup window.
 * Search window.
 * ~~Help window.~~
+* ~~Display constellation names.~~
 * Drawing constellation lines.
 * Measurement tool.
 * Adding more stars and non-fixed objects (planets, comets, sun, moon, etc.).
@@ -50,6 +51,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * ~~Compass points~~
 * ~~Display current facing~~
 * Change geo location
+* Clean up code, break out classes / modules into files, DRY stuff up - I wanted to put this off till later but the main file is getting too big
 
 ### Changelog
 
@@ -74,6 +76,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 0.0.4
 * Current facing now displayed in info panel
 * NSEW cardinal directions now appear in main window at ground level
+* Constellation names displaying
 
 ### Data Sources:
 

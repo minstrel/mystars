@@ -45,8 +45,9 @@ module App
   #   for tracking every object
   # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
   # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
-  AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y)
-  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10)
+  # show_constellations - boolean, show constellation names and lines
+  AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y, :show_constellations, :constellation_names)
+  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10, false, nil)
   COMPASSPOINTS = {"N" => Matrix.column_vector([1,0,0,1]), "S" => Matrix.column_vector([-1,0,0,1]), "E" => Matrix.column_vector([0,0,1,1]), "W" => Matrix.column_vector([0,0,-1,1])}
 
 end
@@ -57,7 +58,8 @@ class MyStars
   # objects.
   # For now I'm going to use the JSON files as-is, converting -180 - 180
   # values of long to RA in decimal hours.
-  # This should just get moved to the intialize method of MyStarsStars
+  #   TODO
+  # This should just get moved to MyStarsStars
   def self.newstars_from_JSON(file)
     stars = MyStarsStars.new
     data = JSON.parse(file)
@@ -73,6 +75,19 @@ class MyStars
       stars.members << newstar
     end
     stars
+  end
+
+  def self.newconstellations(file)
+    constellations = []
+    data = JSON.parse(File.read(file, :encoding => "utf-8"))['features']
+    data.each do |con|
+      name = con["properties"]["name"]
+      genitive = con["properties"]["gen"]
+      ra = con['geometry']['coordinates'][0].long_to_ra.to_f
+      dec = con['geometry']['coordinates'][1].to_f
+      constellations << MyStarsConstellation.new({:name => name, :genitive => genitive, :ra => ra, :dec => dec})
+    end
+    constellations
   end
 
 end
@@ -161,7 +176,7 @@ class MyStarsGeo < MyStars
 end
 
 class MyStarsStar < MyStars
-  # This represents a single star
+  # a single star
   #
   # cart_world is the cartesian coordinate column vector in the world
   # cart_proj is the cartesian coordinate column_vector in the current
@@ -173,7 +188,38 @@ class MyStarsStar < MyStars
     ypos = win.maxy - (((@cart_proj[1,0] + 1) / 2.0) * win.maxy).round
     [xpos, ypos]
   end
-  
+
+end
+
+class MyStarsConstellation < MyStars
+  # a single constellation 
+  attr_accessor :name, :genitive, :ra, :dec, :alt, :az, :cart_world, :cart_proj
+  def initialize(attributes)
+    @name = attributes[:name]
+    @genitive = attributes[:genitive]
+    @ra = attributes[:ra]
+    @dec = attributes[:dec]
+  end
+
+  def localize(geo)
+    @alt = geo.altitude(@ra, @dec)
+    @az = geo.azimuth(@ra, @dec)
+    cz = ( Math.cos(@alt.to_rad) * Math.sin(@az.to_rad) )
+    cy = Math.sin(@alt.to_rad)
+    cx = Math.cos(@alt.to_rad) * Math.cos(@az.to_rad)
+    @cart_world = Matrix.column_vector([cx,cy,cz,1])
+  end
+
+  def screen_coords(win)
+    xpos = win.maxx - (((@cart_proj[0,0] + 1) / 2.0) * win.maxx).round
+    ypos = win.maxy - (((@cart_proj[1,0] + 1) / 2.0) * win.maxy).round
+    [xpos, ypos]
+  end
+
+end
+
+class MyStarsConstellationLines < MyStars
+
 end
 
 class MyStarsStars < MyStars
@@ -187,6 +233,7 @@ class MyStarsStars < MyStars
   end
 
   # Update altitude and azimuth with local data from a MyStarsGeo object
+  # and add it to the world matrix
   def localize(geo)
     self.members.each do |star|
       star.alt = geo.altitude(star.ra, star.dec)
@@ -198,30 +245,49 @@ class MyStarsStars < MyStars
     end
   end
 
-  # Create an array of vectors to draw wire mesh aka constellation lines
-  # between two stars
+  # Create an array of vectors to draw a line between two stars
   # Creates screen relative endpoints then passes them to create_points to draw
-  def self.create_line(s1, s2, win)
-    endpoint1, endpoint2 = MyStarsStar.new, MyStarsStar.new
-    endpoint1.cart_proj = Matrix.column_vector(s1.screen_coords(win)+[0,1])
-    endpoint2.cart_proj = Matrix.column_vector(s2.screen_coords(win)+[0,1])
-    create_points(endpoint1,endpoint2)
-  end
+  # Bresenham algorithm
 
-  # Simple bresenham algorithm
-  def self.create_points(s1, s2)
-    if Math.sqrt((s1.cart_proj[0,0].round - s2.cart_proj[0,0].round)**2 + (s1.cart_proj[1,0].round - s2.cart_proj[1,0].round)**2) < 2
-      return []
-    else
-      midx = (s1.cart_proj[0,0] + s2.cart_proj[0,0]) / 2.0
-      midy = (s1.cart_proj[1,0] + s2.cart_proj[1,0]) / 2.0
-      midpoint = MyStarsStar.new
-      midpoint.cart_proj = Matrix.column_vector([midx,midy,0,1])
-      [midpoint] + create_line(s1,midpoint) + create_line(midpoint,s2)
+  def self.create_points(s1,s2)
+    x0 = s1.screen_coords(win)[0]
+    x1 = s2.screen_coords(win)[0]
+    y0 = s1.screen_coords(win)[1]
+    y1 = s2.screen_coords(win)[1]
+    points = []
+    steep = ((y1-y0).abs) > ((x1-x0).abs)
+    if steep
+      x0,y0 = y0,x0
+      x1,y1 = y1,x1
     end
+    if x0 > x1
+      x0,x1 = x1,x0
+      y0,y1 = y1,y0
+    end
+    deltax = x1-x0
+    deltay = (y1-y0).abs
+    error = (deltax / 2).to_i
+    y = y0
+    ystep = nil
+    if y0 < y1
+      ystep = 1
+    else
+      ystep = -1
+    end
+    for x in x0..x1
+      if steep
+        points << {:x => y, :y => x}
+      else
+        points << {:x => x, :y => y}
+      end
+      error -= deltay
+      if error < 0
+        y += ystep
+        error += deltax
+      end
+    end
+    return points
   end
-
-  private_class_method :create_points
 
 end
 
@@ -292,8 +358,21 @@ class MyStarsWindows < MyStars
       end
     end
 
-    # Clear the window and draw the in-view members
+    # Get the in-view constellations
+    if App::Settings.show_constellations
+      in_view_constellation_names = []
+      App::Settings.constellation_names.each do |con|
+        con.cart_proj = pv * con.cart_world 
+        if con.cart_proj[0,0].between?(-1,1) && con.cart_proj[1,0].between?(-1,1) && con.cart_proj[2,0].between?(0,1)
+        in_view_constellation_names << con
+        end
+      end
+    end
+     
+
+    # Clear the window and draw the in-view members and constellations
     win.clear
+    # Draw in-view stars
     App::Settings.in_view.members.each do |star|
       xpos, ypos = star.screen_coords(win)
       win.setpos(ypos,xpos)
@@ -306,7 +385,20 @@ class MyStarsWindows < MyStars
       win.addstr(star.desig + " " + star.con)
     end
 
-    # Insert any appropriate compass points
+    # Draw in-view constellations
+    if App::Settings.show_constellations
+      in_view_constellation_names.each do |con|
+        xpos, ypos = con.screen_coords(win)
+        if (xpos + (con.name).length / 2 + 1) > win.maxx
+          win.setpos(ypos, win.maxx - (con.name).length - 1)
+        else
+          win.setpos(ypos,xpos)
+        end
+        win.addstr(con.name)
+      end
+    end
+
+    # Draw in-view compass points
     App::COMPASSPOINTS.each do |key, value|
       compass_projection = pv * value 
       if compass_projection[0,0].between?(-1,1) && compass_projection[1,0].between?(-1,1) && compass_projection[2,0].between?(0,1)
