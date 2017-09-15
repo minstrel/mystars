@@ -46,7 +46,7 @@ module App
   # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
   # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
   # show_constellations - boolean, show constellation names and lines
-  AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y, :show_constellations, :constellation_names)
+  AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y, :show_constellations, :constellation_names, :constellation_lines)
   Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10, false, nil)
   COMPASSPOINTS = {"N" => Matrix.column_vector([1,0,0,1]), "S" => Matrix.column_vector([-1,0,0,1]), "E" => Matrix.column_vector([0,0,1,1]), "W" => Matrix.column_vector([0,0,-1,1])}
 
@@ -219,7 +219,22 @@ class MyStarsConstellation < MyStars
 end
 
 class MyStarsConstellationLines < MyStars
+  #  TODO
+  # a set of points of a constellation (the pattern itself, not the bounds)
+  attr_accessor :id, :coordinates, :cart_world_set, :alt_az_set, :cart_proj_set
+  def initialize(attributes)
+    @id = attributes[:id]
+    @coordinates = attributes[:coordinates]
+    @cart_world_set = []
+    @alt_az_set = []
+    @cart_proj_set = []
+  end
 
+  def localize(geo)
+    @cart_world_set.each do |cart_world|
+
+    end
+  end
 end
 
 class MyStarsStars < MyStars

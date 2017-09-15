@@ -68,6 +68,9 @@ begin
   App::Settings.collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json', :encoding => 'UTF-8'))
   # Get constellation names
   App::Settings.constellation_names = MyStars.newconstellations('./data/constellations.json')
+  # Get constellation lines
+  #   TODO
+  App::Settings.constellation_lines
   # Main input loop
   while input = main_input.pop
     case input
