@@ -27,6 +27,34 @@ def testcollection
   collection
 end
 
+# Testing to get coordinates imported successfully from
+# constellations.lines.json.
+# TODO
+def testcoords
+  geo = MyStarsGeo.new(-71.5,43.2)
+  App::Settings.constellation_lines = []
+  constellations = JSON.parse(File.read('./data/constellations.lines.json', :encoding => 'utf-8'))['features']
+  constellations.each do |constellation|
+    newconst = MyStarsConstellationLines.new(:id => 1, :coordinates => constellation['geometry']['coordinates'] )
+    newconst.coordinates.each do |lines|
+      newline = []
+      newcartline = []
+      lines.each do |point|
+        alt = geo.altitude(point[0], point[1])
+        az = geo.azimuth(point[0], point[1])
+        newline << [alt,az]
+        cz = ( Math.cos(alt.to_rad) * Math.sin(az.to_rad) )
+        cy = Math.sin(alt.to_rad)
+        cx = Math.cos(alt.to_rad) * Math.cos(az.to_rad)
+        newcartline << Matrix.column_vector([cx,cy,cz,1])
+      end
+      newconst.alt_az_set << newline
+      newconst.cart_world_set << newcartline
+    end
+    App::Settings.constellation_lines << newconst
+  end 
+end
+
 module App
   # Running settings
   # :mag is magnification, not magnitude (that was a bad choice, rename
@@ -46,8 +74,10 @@ module App
   # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
   # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
   # show_constellations - boolean, show constellation names and lines
+  # constellation_names - locations and names of floating constellation labels
+  # constellation_lines - vertices of line segments for constellation outlines
   AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y, :show_constellations, :constellation_names, :constellation_lines)
-  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10, false, nil)
+  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10, false, nil, nil)
   COMPASSPOINTS = {"N" => Matrix.column_vector([1,0,0,1]), "S" => Matrix.column_vector([-1,0,0,1]), "E" => Matrix.column_vector([0,0,1,1]), "W" => Matrix.column_vector([0,0,-1,1])}
 
 end
@@ -221,6 +251,8 @@ end
 class MyStarsConstellationLines < MyStars
   #  TODO
   # a set of points of a constellation (the pattern itself, not the bounds)
+  # Note that the coordinate sets are arrays of arrays of arrays - multiple
+  # lines making up the constellation.
   attr_accessor :id, :coordinates, :cart_world_set, :alt_az_set, :cart_proj_set
   def initialize(attributes)
     @id = attributes[:id]
@@ -231,7 +263,7 @@ class MyStarsConstellationLines < MyStars
   end
 
   def localize(geo)
-    @cart_world_set.each do |cart_world|
+    @coordinates.each do |coords|
 
     end
   end
