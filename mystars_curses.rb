@@ -69,8 +69,7 @@ begin
   # Get constellation names
   App::Settings.constellation_names = MyStars.newconstellations('./data/constellations.json')
   # Get constellation lines
-  #   TODO
-  App::Settings.constellation_lines
+  App::Settings.constellation_lines = MyStars.newconstellation_lines('./data/constellations.lines.json')
   # Main input loop
   while input = main_input.pop
     case input
@@ -81,6 +80,8 @@ begin
       App::Settings.collection.localize(geo)
       # Add constellation names to the world matrix
       App::Settings.constellation_names.each { |con| con.localize(geo) }
+      # Add constellation lines to the world martix
+      App::Settings.constellation_lines.each { |conline| conline.localize(geo) }
       # Draw a window centered around the input coords
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.selectID(win, info_win)

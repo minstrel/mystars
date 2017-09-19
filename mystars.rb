@@ -27,34 +27,6 @@ def testcollection
   collection
 end
 
-# Testing to get coordinates imported successfully from
-# constellations.lines.json.
-# TODO
-def testcoords
-  geo = MyStarsGeo.new(-71.5,43.2)
-  App::Settings.constellation_lines = []
-  constellations = JSON.parse(File.read('./data/constellations.lines.json', :encoding => 'utf-8'))['features']
-  constellations.each do |constellation|
-    newconst = MyStarsConstellationLines.new(:id => 1, :coordinates => constellation['geometry']['coordinates'] )
-    newconst.coordinates.each do |lines|
-      newline = []
-      newcartline = []
-      lines.each do |point|
-        alt = geo.altitude(point[0], point[1])
-        az = geo.azimuth(point[0], point[1])
-        newline << [alt,az]
-        cz = ( Math.cos(alt.to_rad) * Math.sin(az.to_rad) )
-        cy = Math.sin(alt.to_rad)
-        cx = Math.cos(alt.to_rad) * Math.cos(az.to_rad)
-        newcartline << Matrix.column_vector([cx,cy,cz,1])
-      end
-      newconst.alt_az_set << newline
-      newconst.cart_world_set << newcartline
-    end
-    App::Settings.constellation_lines << newconst
-  end 
-end
-
 module App
   # Running settings
   # :mag is magnification, not magnitude (that was a bad choice, rename
@@ -120,6 +92,25 @@ class MyStars
     constellations
   end
 
+  def self.newconstellation_lines(file)
+    constellation_lines = []
+    constellations = JSON.parse(File.read(file, :encoding => 'utf-8'))['features']
+    constellations.each do |constellation|
+      # The 'ser' ID is duplicated in the data, we're not using ID yet but
+      # keep this note if issues arise later.
+      coordset = []
+      constellation['geometry']['coordinates'].each do |lines|
+        newline = []
+        lines.each do |point|
+          newline << [point[0].long_to_ra.to_f, point[1].to_f]
+        end
+        coordset << newline
+      end
+      newconst = MyStarsConstellationLines.new(:id => constellation['id'], :coordinates => coordset )
+      constellation_lines << newconst
+    end 
+    constellation_lines
+  end
 end
 
 class MyStarsGeo < MyStars
@@ -249,7 +240,6 @@ class MyStarsConstellation < MyStars
 end
 
 class MyStarsConstellationLines < MyStars
-  #  TODO
   # a set of points of a constellation (the pattern itself, not the bounds)
   # Note that the coordinate sets are arrays of arrays of arrays - multiple
   # lines making up the constellation.
@@ -263,9 +253,70 @@ class MyStarsConstellationLines < MyStars
   end
 
   def localize(geo)
-    @coordinates.each do |coords|
-
+    @alt_az_set = []
+    @cart_world_set = []
+    @coordinates.each do |lines|
+      newline = []
+      newcartline = []
+      lines.each do |point|
+        alt = geo.altitude(point[0], point[1])
+        az = geo.azimuth(point[0], point[1])
+        newline << [alt,az]
+        cz = ( Math.cos(alt.to_rad) * Math.sin(az.to_rad) )
+        cy = Math.sin(alt.to_rad)
+        cx = Math.cos(alt.to_rad) * Math.cos(az.to_rad)
+        newcartline << Matrix.column_vector([cx,cy,cz,1])
+      end
+      @alt_az_set << newline
+      @cart_world_set << newcartline
     end
+  end
+
+  # TODO this is ugly, screen_coords defined for different classes, this one
+  # is using a class method because it's not acting on an instance, just
+  # returning some values from input
+  def self.screen_coords(win, vector)
+    xpos = win.maxx - (((vector[0,0] + 1) / 2.0) * win.maxx).round
+    ypos = win.maxy - (((vector[1,0] + 1) / 2.0) * win.maxy).round
+    [xpos, ypos]
+  end
+
+  # TODO this is ugly too, defined here taking coords as input and in
+  # MyStarsStars as taking stars as input
+  def self.create_points(x0,y0,x1,y1)
+    points = []
+    steep = ((y1-y0).abs) > ((x1-x0).abs)
+    if steep
+      x0,y0 = y0,x0
+      x1,y1 = y1,x1
+    end
+    if x0 > x1
+      x0,x1 = x1,x0
+      y0,y1 = y1,y0
+    end
+    deltax = x1-x0
+    deltay = (y1-y0).abs
+    error = (deltax / 2).to_i
+    y = y0
+    ystep = nil
+    if y0 < y1
+      ystep = 1
+    else
+      ystep = -1
+    end
+    for x in x0..x1
+      if steep
+        points << {:x => y, :y => x}
+      else
+        points << {:x => x, :y => y}
+      end
+      error -= deltay
+      if error < 0
+        y += ystep
+        error += deltax
+      end
+    end
+    return points
   end
 end
 
@@ -416,6 +467,65 @@ class MyStarsWindows < MyStars
       end
     end
      
+    # TODO Get and draw in-view constellation lines
+    # TODO troubleshoot why this isn't working
+    if App::Settings.show_constellations
+    # Project all the line points into projection view
+    # code
+      App::Settings.constellation_lines.each do |con|
+        new_proj_set = []
+        con.cart_world_set.each do |line|
+          new_proj_line = []
+          line.each do |point|
+            newpoint = pv * point
+            new_proj_line << newpoint
+          end
+          new_proj_set << new_proj_line
+        end
+        con.cart_proj_set = new_proj_set
+      end
+    # Get all the lines containing points that are in the current screen
+    # code
+      on_screen_lines = []
+      App::Settings.constellation_lines.each do |con|
+        con.cart_proj_set.each do |line|
+          line.each do |point|
+            if point[0,0].between?(-1,1) && point[1,0].between?(-1,1) && point[2,0].between?(0,1)
+              on_screen_lines << line
+            end
+          end
+        end
+      end
+      on_screen_lines.uniq!
+    # Draw lines between all those points and the previous and next points,
+    # if they exist.
+    # There's going to be a lot of duplication here, but it's small so clean
+    # it up later.
+    # Drop any points that have negative x and y values
+    # code
+    # Iterate through each line, calculate on-screen coords, then run those
+    # through the Bresenham algorithm.  Add all those points to another array,
+    # dropping any that are negative x and y
+      points_to_draw = []
+      on_screen_lines.each do |line|
+        line.each.with_index do |point, i|
+          if line[i+1]
+            x0, y0 = MyStarsConstellationLines.screen_coords(win,point) 
+            x1, y1 = MyStarsConstellationLines.screen_coords(win,line[i+1]) 
+            points_to_draw += MyStarsConstellationLines.create_points(x0,y0,x1,y1)
+          end
+        end 
+      end 
+      points_to_draw.uniq!
+      # TODO isn't even working even with below
+      # points_to_draw = [{:x=>2, :y=>2}]
+      points_to_draw.each do |point|
+        if (point[:y] >= 0) && (point[:x] >= 0)
+          win.setpos(point[:y], point[:x])
+          win.addstr("o")
+        end
+      end
+    end
 
     # Clear the window and draw the in-view members and constellations
     win.clear
