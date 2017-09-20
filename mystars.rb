@@ -467,8 +467,9 @@ class MyStarsWindows < MyStars
       end
     end
      
-    # TODO Get and draw in-view constellation lines
-    # TODO troubleshoot why this isn't working
+    # Clear the window and draw the in-view members and constellations
+    win.clear
+    # Get and draw in-view constellation lines
     if App::Settings.show_constellations
     # Project all the line points into projection view
     # code
@@ -517,18 +518,14 @@ class MyStarsWindows < MyStars
         end 
       end 
       points_to_draw.uniq!
-      # TODO isn't even working even with below
-      # points_to_draw = [{:x=>2, :y=>2}]
       points_to_draw.each do |point|
-        if (point[:y] >= 0) && (point[:x] >= 0)
+        if (point[:y].between?(0,win.maxy)) && (point[:x].between?(0,win.maxx))
           win.setpos(point[:y], point[:x])
-          win.addstr("o")
+          win.addstr("·")
         end
       end
     end
 
-    # Clear the window and draw the in-view members and constellations
-    win.clear
     # Draw in-view stars
     App::Settings.in_view.members.each do |star|
       xpos, ypos = star.screen_coords(win)
