@@ -8,7 +8,7 @@ This is a little ncurses based planetarium.
 * The ruby 'curses' gem, installed via:
   `gem install curses`
   or from source at https://github.com/ruby/curses
-* Curses, ncurses or PDCurses (some versions may have issues with Unicode characters, in this case the Greek letters).
+* Curses, ncurses or PDCurses (some versions may have issues with Unicode characters, in this case the Greek letters and possibly the dot used to draw constellation lines).
 
 ### Current State & Instructions
 
