@@ -30,7 +30,7 @@ Tab through stars on the current viewport with tab and shift-tab.
 
 Toggle display of constellation names and lines with c.
 
-Most screens will appear stretched vertically (ie North - South).  This is an artifact of most fonts being rectangular, as spacing is done by row and column count, not font size. Installing a square font will mostly correct for this although line spacing may still cause some stretch.
+Most screens will appear stretched vertically (ie altitudinally).  This is an artifact of most fonts being rectangular, as spacing is done by row and column count, not font size. Installing a square font will mostly correct for this although line spacing may still cause some stretch.
 
 Hit q to exit.
 
