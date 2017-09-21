@@ -572,12 +572,40 @@ class MyStarsWindows < MyStars
     App::Settings.in_view.members.reverse!
     
     # Draw the ground, if toggled
-    # Start by plotting 0,0,0 on screen
-    # Then plot x,0,z, where x and z are the coords of the furthest point in
-    # the direction currently facing.
-    # Now draw circle with Bresenham circle algorithm.
-    # See if this works then fill it in with rasterization.
-    # This might be futile as it won't really do depth, I'll experiment and see.
+    # First attempt: plot a circle of 360 points and draw lines between them.
+    # Start and end with 0 degrees to complete it.
+    groundcoords = ((0..359).to_a + [0]).collect { |a| Matrix.column_vector([Math.cos(a.to_rad), 0, Math.sin(a.to_rad), 1]) }
+    # TODO Trying to make this work with bresenham lines below here
+    # Put coordinates into projection space
+    ground_projection = groundcoords.collect do |ground|
+      pv * ground
+    end
+
+    # Take the coordinates that are in view or have the next item in view
+    # and create line points between them and the previous and next point.
+    # Filter uniques.
+    ground_projection.each.with_index do |gp, i|
+
+    end
+
+    ## TODO This works below but trying to get it to work with bresenham lines
+    #ground_screen = groundcoords.collect do |ground|
+    #  ground_cart_proj = pv * ground
+    #  if ground_cart_proj[0,0].between?(-1,1) && ground_cart_proj[1,0].between?(-1,1) && ground_cart_proj[2,0].between?(0,1)
+    #    ground_cart_proj 
+    #  end
+    #end
+    ## Don't call compact! because it returns nil instead of array if there are
+    ## no nils to compact, whereas compact returns the array (why?????)
+    #ground_screen = ground_screen.compact
+    #ground_screen.each do |ground|
+    #  xpos = win.maxx - (((ground[0,0] + 1) / 2.0) * win.maxx).round
+    #  ypos = win.maxy - (((ground[1,0] + 1) / 2.0) * win.maxy).round
+    #  if ypos < win.maxy
+    #    win.setpos(ypos,xpos)
+    #    win.addstr("#")
+    #  end
+    #end
     win.refresh
 
   end 
