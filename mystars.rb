@@ -571,6 +571,13 @@ class MyStarsWindows < MyStars
     # Sort it better instead of doing this.
     App::Settings.in_view.members.reverse!
     
+    # Draw the ground, if toggled
+    # Start by plotting 0,0,0 on screen
+    # Then plot x,0,z, where x and z are the coords of the furthest point in
+    # the direction currently facing.
+    # Now draw circle with Bresenham circle algorithm.
+    # See if this works then fill it in with rasterization.
+    # This might be futile as it won't really do depth, I'll experiment and see.
     win.refresh
 
   end 
