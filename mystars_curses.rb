@@ -139,6 +139,11 @@ begin
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateVisMag(info_win)
       MyStarsWindows.selectID(win, info_win)
+    when 'g'
+      App::Settings.show_ground = !App::Settings.show_ground
+      MyStarsWindows.drawWindow(win)
+      MyStarsWindows.updateGround(info_win)
+      MyStarsWindows.selectID(win, info_win)
     when 'c'
       App::Settings.show_constellations = !App::Settings.show_constellations
       MyStarsWindows.drawWindow(win)

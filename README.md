@@ -30,6 +30,8 @@ Tab through stars on the current viewport with tab and shift-tab.
 
 Toggle display of constellation names and lines with c.
 
+Toggle ground visibility with g.
+
 Most screens will appear stretched vertically (ie altitudinally).  This is an artifact of most fonts being rectangular, as spacing is done by row and column count, not font size. Installing a square font will mostly correct for this although line spacing may still cause some stretch.
 
 Hit q to exit.
@@ -49,7 +51,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * Beginnings of a nicer "look", including colors and displaying different icons for stars dependant on magnitude range.  Also separate icons for DSOs once those are in.
 * Protocols to control Meade and nexStar mounts via serial interface.  This is highly dependant on my actually getting ahold of one to test.  This feels like it should be a "far flung future" feature, but I think I'd like to put it in sooner than later, because I have the feeling that if this application will ever be of use to anyone, it will be as a minimalist, quick and dirty, interface to control mounts that can be run from anywhere with a terminal. 
 * ~~Views below the horizon.~~
-* Toggleable ground layer.
+* ~~Toggleable ground layer.~~
 * ~~Compass points~~
 * ~~Display current facing~~
 * Change geo location
@@ -80,6 +82,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * NSEW cardinal directions now appear in main window at ground level
 * Constellation names displaying
 * Constellation lines displaying
+* Ground layer available, toggle with g.
 
 ### Data Sources:
 

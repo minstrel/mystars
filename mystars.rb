@@ -48,9 +48,10 @@ module App
   # show_constellations - boolean, show constellation names and lines
   # constellation_names - locations and names of floating constellation labels
   # constellation_lines - vertices of line segments for constellation outlines
-  AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y, :show_constellations, :constellation_names, :constellation_lines)
-  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10, false, nil, nil)
+  AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y, :show_constellations, :constellation_names, :constellation_lines, :show_ground)
+  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10, false, nil, nil, true)
   COMPASSPOINTS = {"N" => Matrix.column_vector([1,0,0,1]), "S" => Matrix.column_vector([-1,0,0,1]), "E" => Matrix.column_vector([0,0,1,1]), "W" => Matrix.column_vector([0,0,-1,1])}
+  GROUNDCOORDS = ((0..359).to_a + [0]).collect { |a| Matrix.column_vector([Math.cos(a.to_rad), 0, Math.sin(a.to_rad), 1]) }
 
 end
 
@@ -456,6 +457,11 @@ class MyStarsWindows < MyStars
       end
     end
 
+    # If the ground is showing, discard stars below 0 altitude
+    if App::Settings.show_ground
+      App::Settings.in_view.members = App::Settings.in_view.members.reject { |star| star.alt < 0.0 }
+    end
+
     # Get the in-view constellations
     if App::Settings.show_constellations
       in_view_constellation_names = []
@@ -552,6 +558,52 @@ class MyStarsWindows < MyStars
       end
     end
 
+
+    # Sort the in_view stars by x, then y for tabbing
+    # Might be worth benchmarking later...
+    App::Settings.in_view.members.sort! do |a, b|
+      (a.cart_proj[1,0] + 1.0) * 1000 - (a.cart_proj[0,0] + 1.0) <=> (b.cart_proj[1,0] + 1.0) * 1000 - (b.cart_proj[0,0] + 1.0)
+    end
+    # Sort it better instead of doing this.
+    App::Settings.in_view.members.reverse!
+    
+    # Draw the ground, if toggled
+    if App::Settings.show_ground
+      # Put coordinates into projection space
+      # Use projection matrix with z range starting at 0 so we don't lose the
+      # ground when looking straight down.
+      ground_projection = Stars3D.projection(width, height, 0.0, 1.0)
+      ground_pv = ground_projection * view
+      ground_projection = App::GROUNDCOORDS.collect do |ground|
+        ground_pv * ground
+      end
+
+      # Create line points between all coords in front of camera
+      # A little inefficient because it pulls x and y out of view but doesn't
+      # seem to impact performance.
+      horizon_points_to_draw = []
+      ground_projection.each.with_index do |gp, i|
+        if ground_projection[i+1]
+          if gp[2,0].between?(0,1)
+          x0, y0 = MyStarsConstellationLines.screen_coords(win,gp) 
+          x1, y1 = MyStarsConstellationLines.screen_coords(win,ground_projection[i+1]) 
+          horizon_points_to_draw += MyStarsConstellationLines.create_points(x0,y0,x1,y1)
+          end
+        end
+      end
+      # Filter uniques.
+      horizon_points_to_draw = horizon_points_to_draw.uniq
+      # Draw horizon points and fill screen below them
+      horizon_points_to_draw.each do |point|
+        if (point[:y] < win.maxy-1) && (point[:x].between?(0,win.maxx-1))
+          (point[:y]).upto(win.maxy-1) do |y|
+            win.setpos(y,point[:x])
+            win.addstr("#")
+          end
+        end
+      end
+    end
+
     # Draw in-view compass points
     App::COMPASSPOINTS.each do |key, value|
       compass_projection = pv * value 
@@ -563,49 +615,6 @@ class MyStarsWindows < MyStars
       end
     end
 
-    # Sort the in_view stars by x, then y for tabbing
-    # Might be worth benchmarking later...
-    App::Settings.in_view.members.sort! do |a, b|
-      (a.cart_proj[1,0] + 1.0) * 1000 - (a.cart_proj[0,0] + 1.0) <=> (b.cart_proj[1,0] + 1.0) * 1000 - (b.cart_proj[0,0] + 1.0)
-    end
-    # Sort it better instead of doing this.
-    App::Settings.in_view.members.reverse!
-    
-    # Draw the ground, if toggled
-    # First attempt: plot a circle of 360 points and draw lines between them.
-    # Start and end with 0 degrees to complete it.
-    groundcoords = ((0..359).to_a + [0]).collect { |a| Matrix.column_vector([Math.cos(a.to_rad), 0, Math.sin(a.to_rad), 1]) }
-    # TODO Trying to make this work with bresenham lines below here
-    # Put coordinates into projection space
-    ground_projection = groundcoords.collect do |ground|
-      pv * ground
-    end
-
-    # Take the coordinates that are in view or have the next item in view
-    # and create line points between them and the previous and next point.
-    # Filter uniques.
-    ground_projection.each.with_index do |gp, i|
-
-    end
-
-    ## TODO This works below but trying to get it to work with bresenham lines
-    #ground_screen = groundcoords.collect do |ground|
-    #  ground_cart_proj = pv * ground
-    #  if ground_cart_proj[0,0].between?(-1,1) && ground_cart_proj[1,0].between?(-1,1) && ground_cart_proj[2,0].between?(0,1)
-    #    ground_cart_proj 
-    #  end
-    #end
-    ## Don't call compact! because it returns nil instead of array if there are
-    ## no nils to compact, whereas compact returns the array (why?????)
-    #ground_screen = ground_screen.compact
-    #ground_screen.each do |ground|
-    #  xpos = win.maxx - (((ground[0,0] + 1) / 2.0) * win.maxx).round
-    #  ypos = win.maxy - (((ground[1,0] + 1) / 2.0) * win.maxy).round
-    #  if ypos < win.maxy
-    #    win.setpos(ypos,xpos)
-    #    win.addstr("#")
-    #  end
-    #end
     win.refresh
 
   end 
@@ -627,6 +636,15 @@ class MyStarsWindows < MyStars
     info_win.addstr("Constellations:")
     info_win.setpos(8,0)
     case App::Settings.show_constellations
+    when true
+      info_win.addstr("Shown")
+    when false
+      info_win.addstr("Hidden")
+    end
+    info_win.setpos(9,0)
+    info_win.addstr("Ground")
+    info_win.setpos(10,0)
+    case App::Settings.show_ground
     when true
       info_win.addstr("Shown")
     when false
@@ -671,6 +689,18 @@ class MyStarsWindows < MyStars
     info_win.setpos(8,0)
     info_win.clrtoeol
     case App::Settings.show_constellations
+    when true
+      info_win.addstr("Shown")
+    when false
+      info_win.addstr("Hidden")
+    end
+    info_win.refresh
+  end
+
+  def self.updateGround(info_win)
+    info_win.setpos(10,0)
+    info_win.clrtoeol
+    case App::Settings.show_ground
     when true
       info_win.addstr("Shown")
     when false
