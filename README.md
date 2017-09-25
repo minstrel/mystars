@@ -32,7 +32,11 @@ Toggle display of constellation names and lines with c.
 
 Toggle ground visibility with g.
 
-Most screens will appear stretched vertically (ie altitudinally).  This is an artifact of most fonts being rectangular, as spacing is done by row and column count, not font size. Installing a square font will mostly correct for this although line spacing may still cause some stretch.
+Toggle stab labelling with L.
+
+Help window with H (not updating this often since stuff is still in flux).
+
+If you are using a square (16x16, for example) font, the screen may appear stretched horizontally.  This is because I'm making a somewhat arbritray adjustment for typical font h/w ratios.  I'll maybe make this an option you can change at some point if it's needed.  For now, I'm aiming for usability rather than photo-realism.
 
 Hit q to exit.
 
@@ -54,6 +58,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * ~~Toggleable ground layer.~~
 * ~~Compass points~~
 * ~~Display current facing~~
+* ~~Adjustable label detail~~
 * Change geo location
 * Clean up code, break out classes / modules into files, DRY stuff up - I wanted to put this off till later but the main file is getting too big
 
@@ -83,6 +88,8 @@ Some very basic features are now present.  A small and not comprehensive list of
 * Constellation names displaying
 * Constellation lines displaying
 * Ground layer available, toggle with g.
+* Cycle through label visibility with L.  Will show all stars with designation, only named stars or none.
+* Adjusted displayed width to compensate for font ratio (this is pretty arbritrary without a way to actually read the terminal font, but I think it's better than trying to get the user to install a square font)
 
 ### Data Sources:
 

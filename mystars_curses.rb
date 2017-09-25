@@ -41,7 +41,7 @@ begin
   user_input = Thread.new do
     begin
     while from_user = win.getch
-      if from_user == 'h'
+      if from_user == 'H'
         main_input << from_user
         Thread.stop
       else
@@ -149,10 +149,16 @@ begin
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateConstellations(info_win)
       MyStarsWindows.selectID(win, info_win)
-    when 'h'
+    when 'H'
       # Help screen
       MyStarsWindows.help
       user_input.wakeup
+    when 'L'
+      # Label visibility
+      App::Settings.labels = App::LABELS.next
+      MyStarsWindows.drawWindow(win)
+      MyStarsWindows.updateLabels(info_win)
+      MyStarsWindows.selectID(win, info_win)
     when 's'
       # Search screen
       MyStarsWindows.search

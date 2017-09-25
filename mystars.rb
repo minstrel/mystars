@@ -48,8 +48,10 @@ module App
   # show_constellations - boolean, show constellation names and lines
   # constellation_names - locations and names of floating constellation labels
   # constellation_lines - vertices of line segments for constellation outlines
-  AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y, :show_constellations, :constellation_names, :constellation_lines, :show_ground)
-  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10, false, nil, nil, true)
+  # labels - :named, :all, :none - show only named star labels, all stars, or no labels
+  LABELS = [:named, :all, :none].cycle
+  AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y, :show_constellations, :constellation_names, :constellation_lines, :show_ground, :labels)
+  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10, true, nil, nil, true, LABELS.next)
   COMPASSPOINTS = {"N" => Matrix.column_vector([1,0,0,1]), "S" => Matrix.column_vector([-1,0,0,1]), "E" => Matrix.column_vector([0,0,1,1]), "W" => Matrix.column_vector([0,0,-1,1])}
   GROUNDCOORDS = ((0..359).to_a + [0]).collect { |a| Matrix.column_vector([Math.cos(a.to_rad), 0, Math.sin(a.to_rad), 1]) }
 
@@ -447,6 +449,9 @@ class MyStarsWindows < MyStars
     # to in_view collection
     view = Stars3D.view(0,0,0,App::Settings.facing_y.to_rad,App::Settings.facing_xz.to_rad,0)
     width = ((win.maxx.to_f / win.maxy.to_f) * mag).to_rad
+    # Adjust width to compensate for terminal character size
+    # This is pretty arbritrary but I don't see a better way right now
+    width = width * 0.5
     height = mag.to_rad
     projection = Stars3D.projection(width, height, 0.25, 1.0)
     pv = projection * view
@@ -539,10 +544,28 @@ class MyStarsWindows < MyStars
       win.addstr("*")
       win.setpos(ypos+1,xpos)
       # This is to fix text wrapping, not great but good enough for now
-      if (xpos + (star.desig + " " + star.con).length) > win.maxx
-        win.setpos(ypos+1, win.maxx - (star.desig + "  " + star.con).length)
+      case App::Settings.labels
+      when :named
+        if !star.name.empty?
+          if (xpos + (star.name).length) > win.maxx
+            win.setpos(ypos+1, win.maxx - star.name.length)
+          end
+          win.addstr(star.name)
+        end
+      when :all
+        if !star.name.empty?
+          if (xpos + (star.name).length) > win.maxx
+            win.setpos(ypos+1, win.maxx - star.name.length)
+          end
+          win.addstr(star.name)
+        else
+          if (xpos + (star.desig + " " + star.con).length) > win.maxx
+            win.setpos(ypos+1, win.maxx - (star.desig + "  " + star.con).length)
+          end
+          win.addstr(star.desig + " " + star.con)
+        end
+      when :none
       end
-      win.addstr(star.desig + " " + star.con)
     end
 
     # Draw in-view constellations
@@ -642,13 +665,24 @@ class MyStarsWindows < MyStars
       info_win.addstr("Hidden")
     end
     info_win.setpos(9,0)
-    info_win.addstr("Ground")
+    info_win.addstr("Ground:")
     info_win.setpos(10,0)
     case App::Settings.show_ground
     when true
       info_win.addstr("Shown")
     when false
       info_win.addstr("Hidden")
+    end
+    info_win.setpos(11,0)
+    info_win.addstr("Labels:")
+    info_win.setpos(12,0)
+    case App::Settings.labels
+    when :all
+      info_win.addstr("All stars")
+    when :named
+      info_win.addstr("Named stars only")
+    when :none
+      info_win.addstr("No star labels")
     end
     info_win.setpos(32,0)
     info_win.addstr("Longitude:")
@@ -658,15 +692,15 @@ class MyStarsWindows < MyStars
     info_win.addstr("Latitude")
     info_win.setpos(35,0)
     info_win.addstr(App::Settings.lat.to_s)
-    info_win.setpos(12,0)
+    info_win.setpos(14,0)
     info_win.addstr("Current Object")
-    info_win.setpos(13,0)
-    info_win.addstr("Name:")
     info_win.setpos(15,0)
-    info_win.addstr("Designation:")
+    info_win.addstr("Name:")
     info_win.setpos(17,0)
-    info_win.addstr("RA / Dec:")
+    info_win.addstr("Designation:")
     info_win.setpos(19,0)
+    info_win.addstr("RA / Dec:")
+    info_win.setpos(21,0)
     info_win.addstr("Alt / Az:")
     info_win.setpos(38,0)
     info_win.addstr("Facing")
@@ -709,6 +743,20 @@ class MyStarsWindows < MyStars
     info_win.refresh
   end
 
+  def self.updateLabels(info_win)
+    info_win.setpos(12,0)
+    info_win.clrtoeol
+    case App::Settings.labels
+    when :all
+      info_win.addstr("All stars")
+    when :named
+      info_win.addstr("Named stars only")
+    when :none
+      info_win.addstr("No star labels")
+    end
+    info_win.refresh
+  end
+
   def self.updateFacing(info_win)
     info_win.setpos(39,0)
     info_win.clrtoeol
@@ -723,7 +771,6 @@ class MyStarsWindows < MyStars
     info_win.refresh
   # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
   # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
-  # AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y)
   end
 
   def self.updateTime(info_win,geo)
@@ -742,16 +789,16 @@ class MyStarsWindows < MyStars
     desig = star.desig.to_s + " " + star.con
     radec = star.ra.round(2).to_s + + " / " + star.dec.round(2).to_s
     altaz = star.alt.round(2).to_s + " / " + star.az.round(2).to_s
-    info_win.setpos(14,0)
-    info_win.clrtoeol
-    info_win.addstr(name)
     info_win.setpos(16,0)
     info_win.clrtoeol
-    info_win.addstr(desig)
+    info_win.addstr(name)
     info_win.setpos(18,0)
     info_win.clrtoeol
-    info_win.addstr(radec)
+    info_win.addstr(desig)
     info_win.setpos(20,0)
+    info_win.clrtoeol
+    info_win.addstr(radec)
+    info_win.setpos(22,0)
     info_win.clrtoeol
     info_win.addstr(altaz)
     info_win.refresh
