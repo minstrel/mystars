@@ -3,23 +3,8 @@
 require 'date'
 require 'json'
 require 'curses'
-require_relative '3d_engine'
-
-class Numeric
-  def to_rad
-    self * Math::PI / 180
-  end
-  def to_deg
-    self * ( 180 / Math::PI )
-  end
-  def long_to_ra
-    if self < 0
-      (self + 360) / 15
-    else
-      self / 15
-    end
-  end
-end
+require_relative 'stars3d'
+require_relative 'helpers'
 
 def testcollection
   collection = MyStars.newstars('./data/mystars_6.json')
@@ -28,45 +13,15 @@ def testcollection
   collection
 end
 
-module App
-  # Running settings
-  # :mag is magnification, not magnitude (that was a bad choice, rename
-  # it sometime)
-  # mag - field of view in degrees N-S
-  # vis_mag - dimmest magnitude visible
-  # collection - MyStarsStars collection in current database
-  # lat - user latitude
-  # lon - user longitude
-  # in_view - MyStarsStars collection in current viewscreen
-  # timer - delay, in seconds, before timer thread attempts to request a
-  #   refresh of both collection and in_view
-  # selected_id star.id # of the currently selected star.  When we clean up
-  #   the input files, a new id unique to this application should probably
-  #   get written, as I don't know if id will always be there or be reliable
-  #   for tracking every object
-  # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
-  # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
-  # show_constellations - boolean, show constellation names and lines
-  # constellation_names - locations and names of floating constellation labels
-  # constellation_lines - vertices of line segments for constellation outlines
-  # labels - :named, :all, :none - show only named star labels, all stars, or no labels
-  # Possible settings for object labels
-  LABELS = [:named, :all, :none].cycle
-  AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y, :show_constellations, :constellation_names, :constellation_lines, :show_ground, :labels)
-  Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10, true, nil, nil, true, LABELS.next)
-  COMPASSPOINTS = {"N" => Matrix.column_vector([1,0,0,1]), "S" => Matrix.column_vector([-1,0,0,1]), "E" => Matrix.column_vector([0,0,1,1]), "W" => Matrix.column_vector([0,0,-1,1])}
-  GROUNDCOORDS = ((0..359).to_a + [0]).collect { |a| Matrix.column_vector([Math.cos(a.to_rad), 0, Math.sin(a.to_rad), 1]) }
-
-end
-
 class MyStars
+
+  # Parent class for everything else.
+  # Right now it contains creator methods for the different data types.
 
   # Pass in a file object with star data and get back an array of MyStarsStar
   # objects.
   # For now I'm going to use the JSON files as-is, converting -180 - 180
   # values of long to RA in decimal hours.
-  #   TODO
-  # This should just get moved to MyStarsStars
   def self.newstars(file)
     stars = MyStarsStars.new
     data = JSON.parse(File.read(file, :encoding => "utf-8"))['features']
@@ -84,6 +39,8 @@ class MyStars
     stars
   end
 
+  # Pass in a file with constellation name data and get back an array of
+  # MyStarsConstellation objects.
   def self.newconstellations(file)
     constellations = []
     data = JSON.parse(File.read(file, :encoding => "utf-8"))['features']
@@ -97,6 +54,8 @@ class MyStars
     constellations
   end
 
+  # Pass in a file with constellation line vertices and get back an array
+  # of MyStarsConstellationLines objects.
   def self.newconstellation_lines(file)
     constellation_lines = []
     constellations = JSON.parse(File.read(file, :encoding => 'utf-8'))['features']
@@ -116,89 +75,6 @@ class MyStars
     end 
     constellation_lines
   end
-end
-
-class MyStarsGeo < MyStars
-
-  attr_accessor :time, :jd, :jda, :t, :gmst, :gast, :last, :lat
-  
-  # Initialize method takes the local latitude and longitude (as decimal
-  # degrees) as input and using the current time creates an object
-  # containing the apparent sidereal time, both local and Greenwich.
-  # This calculation is based on the USNO's calculations here:
-  # http://aa.usno.navy.mil/faq/docs/GAST.php
-
-  # Need to adjust the jd argument for initialize to a DateTime object,
-  # since we are using this to display the current date and tim in the info
-  # window.
-
-  def initialize(local_lon, local_lat, time=nil)
-    # Local latitude setter, north is positive
-    @lat = local_lat
-    # Express local_lon as negative for west, positive for east
-    @lon = local_lon
-    # Current DateTime, either specified else now
-    @time = if time then time else DateTime.now end
-    # Julian Day, either specified (optional)
-    # else current Julian Day, fractional
-    @jd = if time then time.ajd.to_f else @time.ajd.to_f end
-    # Julian Days since 1 Jan 2000 at 12 UTC
-    @jda = @jd - 2451545.0
-    # Julian centuries since 1 Jan 2000 at 12 UTC
-    # Currently not using this in favor of a quick calculation, w/ loss of 0.1 sec / century.
-    @t = @jda / 36525.0
-    # Greenwhich Mean Sidereal Time
-    # Quick and dirty version, with loss as mentioned above
-    @gmst = 18.697374558 + ( 24.06570982441908 * @jda )
-    # Reduce to a range of 0 - 24 h
-    @gmst = @gmst % 24
-    # Greenwich Apparent Sidereal Time
-    omega = 125.04 - 0.052954 * @jda
-    l = 280.47 + 0.98565 * @jda
-    epsilon = 23.4393 - 0.0000004 * @jda
-    deltapsi = ( -0.000319 * Math::sin(omega.to_rad) ) - ( 0.000024 * Math::sin( (2*l).to_rad ) )
-    eqeq = deltapsi * Math.cos(epsilon.to_rad)
-    @gast = @gmst + eqeq
-    # Local Apparent Sidereal Time
-    @last = @gast + ( local_lon / 15.0 )
-  end
-
-  # Altitude and Azimuth methods take the Right Ascension and Declination of a fixed
-  # star as decimal hours for RA and decimal degrees for Dec and output the
-  # Altitude and Azimuth as decimal degrees.
-  # AA method just runs them both and sends a pretty output.
-  # This is based on the USNO's calculations here:
-  # http://aa.usno.navy.mil/faq/docs/Alt_Az.php
-  # Results so far test out within a few minutes of Stellarium.
-
-  def altitude(ra, dec)
-    lha = ( @gast - ra ) * 15 + @lon
-    a = Math::cos(lha.to_rad)
-    b = Math::cos(dec.to_rad)
-    c = Math::cos(@lat.to_rad) 
-    d = Math::sin(dec.to_rad)
-    e = Math::sin(@lat.to_rad)
-    Math::asin(a*b*c+d*e).to_deg
-  end
-
-  def azimuth(ra, dec)
-    lha = ( @gast - ra ) * 15 + @lon
-    a = -(Math::sin(lha.to_rad))
-    b = Math::tan(dec.to_rad)
-    c = Math::cos(@lat.to_rad)
-    d = Math::sin(@lat.to_rad)
-    e = Math::cos(lha.to_rad)
-    # Old incorrect formula, delete this once I'm confident atan 2 is working.
-    # Math::atan(a/(b*c-d*e)).to_deg
-    az = Math::atan2( a , (b*c - d*e)).to_deg
-    if az >= 0
-      az
-    else
-      az += 360
-      az
-    end
-  end
-
 end
 
 class MyStarsStar < MyStars
@@ -245,7 +121,7 @@ class MyStarsConstellation < MyStars
 end
 
 class MyStarsConstellationLines < MyStars
-  # a set of points of a constellation (the pattern itself, not the bounds)
+  # A set of points of a constellation (the pattern itself, not the bounds)
   # Note that the coordinate sets are arrays of arrays of arrays - multiple
   # lines making up the constellation.
   attr_accessor :id, :coordinates, :cart_world_set, :alt_az_set, :cart_proj_set
@@ -847,7 +723,6 @@ class MyStarsWindows < MyStars
   end
 
   def self.updateGeo
-    info_win = App::INFO_WIN
     # Help screen popup with command key list
     win = Curses.stdscr
     geowin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
@@ -893,7 +768,6 @@ class MyStarsWindows < MyStars
     Curses.noecho
     Curses.curs_set(0)
     geowin.refresh
-    #geowin.getch
     geowin.clear
     geowin.refresh
     geowin.close

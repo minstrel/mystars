@@ -1,7 +1,9 @@
 #!/usr/bin/ruby -w
 # encoding: utf-8
 
-require_relative 'mystars'
+require_relative 'lib/app'
+require_relative 'lib/mystars'
+require_relative 'lib/mystars_geo'
 
 # Main queue to receive user requests as well as timers and other input.
 main_input = Queue.new
@@ -16,8 +18,6 @@ begin
   App::INFO_WIN = Curses::Window.new(Curses.lines,18,0,0)
   # Initialize main display window
   win = App::WIN
-  # Initialize info window
-  info_win = App::INFO_WIN
   MyStarsWindows.drawInfo
   # Allow arrow key / keypad input
   win.keypad = true
