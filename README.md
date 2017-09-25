@@ -34,6 +34,8 @@ Toggle ground visibility with g.
 
 Toggle stab labelling with L.
 
+Input new geographic location with G.
+
 Help window with H or ?.
 
 If you are using a square (16x16, for example) font, the screen may appear stretched horizontally.  This is because I'm making a somewhat arbritray adjustment for typical font h/w ratios.  I'll maybe make this an option you can change at some point if it's needed.  For now, I'm aiming for usability rather than photo-realism.
@@ -59,7 +61,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * ~~Compass points~~
 * ~~Display current facing~~
 * ~~Adjustable label detail~~
-* Change geo location
+* ~~Change geo location~~
 * Clean up code, break out classes / modules into files, DRY stuff up - I wanted to put this off till later but the main file is getting too big
 
 ### Changelog
@@ -90,6 +92,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * Ground layer available, toggle with g.
 * Cycle through label visibility with L.  Will show all stars with designation, only named stars or none.
 * Adjusted displayed width to compensate for font ratio (this is pretty arbritrary without a way to actually read the terminal font, but I think it's better than trying to get the user to install a square font)
+* Input new geographic location with (G)
 
 ### Data Sources:
 

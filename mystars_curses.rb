@@ -70,6 +70,9 @@ begin
       if (from_user == 'H') || (from_user == '?')
         main_input << from_user
         Thread.stop
+      elsif from_user == 'G'
+        main_input << from_user
+        Thread.stop
       else
       main_input << from_user
       end
@@ -166,10 +169,16 @@ begin
       MyStarsWindows.updateVisMag(info_win)
       MyStarsWindows.selectID(win, info_win)
     when 'g'
+      # Toggle ground visibility
       App::Settings.show_ground = !App::Settings.show_ground
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateGround(info_win)
       MyStarsWindows.selectID(win, info_win)
+    when 'G'
+      # Update geographic location
+      MyStarsWindows.updateGeo(info_win)
+      main_input << "update"
+      user_input.wakeup
     when 'c'
       App::Settings.show_constellations = !App::Settings.show_constellations
       MyStarsWindows.drawWindow(win)
