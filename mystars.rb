@@ -933,6 +933,12 @@ class MyStarsWindows < MyStars
     helpwin.addstr("(+) and (-) to zoom in and out")
     helpwin.setpos(5,2)
     helpwin.addstr("Tab and Shift-Tab to cycle through visible objects")
+    helpwin.setpos(6,2)
+    helpwin.addstr("(c) to toggle constellation lines")
+    helpwin.setpos(7,2)
+    helpwin.addstr("(g) to toggle ground visibility")
+    helpwin.setpos(8,2)
+    helpwin.addstr("(L) to cycle label visibility level")
     helpwin.setpos(10,2)
     helpwin.addstr("(q) to quit")
     helpwin.refresh

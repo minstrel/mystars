@@ -67,7 +67,7 @@ begin
   user_input = Thread.new do
     begin
     while from_user = win.getch
-      if from_user == 'H'
+      if (from_user == 'H') || (from_user == '?')
         main_input << from_user
         Thread.stop
       else
@@ -175,7 +175,7 @@ begin
       MyStarsWindows.drawWindow(win)
       MyStarsWindows.updateConstellations(info_win)
       MyStarsWindows.selectID(win, info_win)
-    when 'H'
+    when 'H', '?'
       # Help screen
       MyStarsWindows.help
       user_input.wakeup

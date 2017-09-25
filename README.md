@@ -34,7 +34,7 @@ Toggle ground visibility with g.
 
 Toggle stab labelling with L.
 
-Help window with H (not updating this often since stuff is still in flux).
+Help window with H or ?.
 
 If you are using a square (16x16, for example) font, the screen may appear stretched horizontally.  This is because I'm making a somewhat arbritray adjustment for typical font h/w ratios.  I'll maybe make this an option you can change at some point if it's needed.  For now, I'm aiming for usability rather than photo-realism.
 
