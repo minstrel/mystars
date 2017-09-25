@@ -1,7 +1,6 @@
 #!/usr/bin/ruby -w
 # encoding: utf-8
 
-require 'curses'
 require_relative 'mystars'
 
 # Main queue to receive user requests as well as timers and other input.
@@ -11,11 +10,15 @@ ok_timer = Queue.new
 
 Curses.init_screen
 begin
+  # Main display window
+  App::WIN = Curses::Window.new(Curses.lines,Curses.cols - 18,0,18)
+  # Info window
+  App::INFO_WIN = Curses::Window.new(Curses.lines,18,0,0)
   # Initialize main display window
-  win = Curses::Window.new(Curses.lines,Curses.cols - 18,0,18)
+  win = App::WIN
   # Initialize info window
-  info_win = Curses::Window.new(Curses.lines,18,0,0)
-  MyStarsWindows.drawInfo(info_win)
+  info_win = App::INFO_WIN
+  MyStarsWindows.drawInfo
   # Allow arrow key / keypad input
   win.keypad = true
   # Get the users lon and lat
@@ -36,7 +39,7 @@ begin
     win.setpos(win.maxy / 2 + 1, 5)
     App::Settings.lon = win.getstr.to_f
   end
-  MyStarsWindows.updateLon(info_win)
+  MyStarsWindows.updateLon
   win.setpos(win.maxy / 2 + 2, 5)
   win.addstr("Enter your latitude as decimal degrees, South is negative")
   win.setpos(win.maxy / 2 + 3, 5)
@@ -54,7 +57,7 @@ begin
     win.setpos(win.maxy / 2 + 3, 5)
     App::Settings.lat = win.getstr.to_f
   end
-  MyStarsWindows.updateLat(info_win)
+  MyStarsWindows.updateLat
   # Don't echo input
   Curses.noecho
   # No cursor
@@ -112,11 +115,11 @@ begin
       # Add constellation lines to the world martix
       App::Settings.constellation_lines.each { |conline| conline.localize(geo) }
       # Draw a window centered around the input coords
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.selectID
       # If we're updating the geospacial date, time has likely changed too,
       # so update that
-      MyStarsWindows.updateTime(info_win,geo) 
+      MyStarsWindows.updateTime(geo) 
       ok_timer << "OK"
     when 'q'
       break
@@ -132,9 +135,9 @@ begin
       else
         # There shouldn't be an else... 
       end
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateMag(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateMag
+      MyStarsWindows.selectID
     when "-"
       # Minus sign, zooms out
       case App::Settings.mag
@@ -147,43 +150,44 @@ begin
       else
         # There shouldn't be an else here either...
       end
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateMag(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateMag
+      MyStarsWindows.selectID
     when 9
       # Tab, cycle through objects
-      MyStarsWindows.selectNext(win, info_win)
+      MyStarsWindows.selectNext
     when Curses::Key::BTAB
       # Shift-Tab, cycle through objects
-      MyStarsWindows.selectPrev(win, info_win)
+      MyStarsWindows.selectPrev
     when 'm'
       # Decrease magnitude filter (show more)
       App::Settings.vis_mag += 1
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateVisMag(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateVisMag
+      MyStarsWindows.selectID
     when 'M'
       # Increase magnitude filter (show less)
       App::Settings.vis_mag -= 1
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateVisMag(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateVisMag
+      MyStarsWindows.selectID
     when 'g'
       # Toggle ground visibility
       App::Settings.show_ground = !App::Settings.show_ground
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateGround(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateGround
+      MyStarsWindows.selectID
     when 'G'
       # Update geographic location
-      MyStarsWindows.updateGeo(info_win)
+      MyStarsWindows.updateGeo
       main_input << "update"
       user_input.wakeup
     when 'c'
+      # Toggle constellation visibility
       App::Settings.show_constellations = !App::Settings.show_constellations
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateConstellations(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateConstellations
+      MyStarsWindows.selectID
     when 'H', '?'
       # Help screen
       MyStarsWindows.help
@@ -191,32 +195,32 @@ begin
     when 'L'
       # Label visibility
       App::Settings.labels = App::LABELS.next
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateLabels(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateLabels
+      MyStarsWindows.selectID
     when 's'
       # Search screen
       MyStarsWindows.search
     when Curses::Key::LEFT
       MyStarsWindows.move(:left)
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateFacing(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateFacing
+      MyStarsWindows.selectID
     when Curses::Key::RIGHT
       MyStarsWindows.move(:right)
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateFacing(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateFacing
+      MyStarsWindows.selectID
     when Curses::Key::UP
       MyStarsWindows.move(:up)
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateFacing(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateFacing
+      MyStarsWindows.selectID
     when Curses::Key::DOWN
       MyStarsWindows.move(:down)
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateFacing(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      MyStarsWindows.drawWindow
+      MyStarsWindows.updateFacing
+      MyStarsWindows.selectID
     end
   end
 ensure

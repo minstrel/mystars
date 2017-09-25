@@ -2,6 +2,7 @@
 
 require 'date'
 require 'json'
+require 'curses'
 require_relative '3d_engine'
 
 class Numeric
@@ -49,6 +50,7 @@ module App
   # constellation_names - locations and names of floating constellation labels
   # constellation_lines - vertices of line segments for constellation outlines
   # labels - :named, :all, :none - show only named star labels, all stars, or no labels
+  # Possible settings for object labels
   LABELS = [:named, :all, :none].cycle
   AppSettings = Struct.new(:mag, :vis_mag, :collection, :lat, :lon, :in_view, :timer, :selected_id, :facing_xz, :facing_y, :show_constellations, :constellation_names, :constellation_lines, :show_ground, :labels)
   Settings = AppSettings.new(10, 6, nil, nil, nil, nil, 5, nil, 90, -10, true, nil, nil, true, LABELS.next)
@@ -426,7 +428,7 @@ class MyStarsWindows < MyStars
     end
   end
 
-  def self.drawWindow(win)
+  def self.drawWindow
     # This is probably inefficent as it polls all available stars, but
     # hopefully good enough for now.
 
@@ -435,6 +437,8 @@ class MyStarsWindows < MyStars
 
     # Iterate through visible stars and try to plot on current screen,
     # given 10 degrees FOV N-S (IE y axis) and enough to fill E-W (x axis)
+
+    win = App::WIN
 
     # Filter out stars below visible magnitude
     collection = App::Settings.collection.members.select { |member| member.mag <= App::Settings.vis_mag }
@@ -645,8 +649,9 @@ class MyStarsWindows < MyStars
   # We could store locations of info win lines as variables and reference
   # those instead of direct locations.
 
-  def self.drawInfo(info_win)
+  def self.drawInfo
     # Initial drawing of info window
+    info_win = App::INFO_WIN
     info_win.setpos(1,0)
     info_win.addstr("Field of View N/S:")
     info_win.setpos(2,0)
@@ -719,7 +724,8 @@ class MyStarsWindows < MyStars
     info_win.refresh
   end
 
-  def self.updateConstellations(info_win)
+  def self.updateConstellations
+    info_win = App::INFO_WIN
     info_win.setpos(8,0)
     info_win.clrtoeol
     case App::Settings.show_constellations
@@ -731,7 +737,8 @@ class MyStarsWindows < MyStars
     info_win.refresh
   end
 
-  def self.updateGround(info_win)
+  def self.updateGround
+    info_win = App::INFO_WIN
     info_win.setpos(10,0)
     info_win.clrtoeol
     case App::Settings.show_ground
@@ -743,7 +750,8 @@ class MyStarsWindows < MyStars
     info_win.refresh
   end
 
-  def self.updateLabels(info_win)
+  def self.updateLabels
+    info_win = App::INFO_WIN
     info_win.setpos(12,0)
     info_win.clrtoeol
     case App::Settings.labels
@@ -757,7 +765,8 @@ class MyStarsWindows < MyStars
     info_win.refresh
   end
 
-  def self.updateFacing(info_win)
+  def self.updateFacing
+    info_win = App::INFO_WIN
     info_win.setpos(39,0)
     info_win.clrtoeol
     azimuth = 90 - App::Settings.facing_xz
@@ -773,7 +782,8 @@ class MyStarsWindows < MyStars
   # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
   end
 
-  def self.updateTime(info_win,geo)
+  def self.updateTime(geo)
+    info_win = App::INFO_WIN
     info_win.setpos(42,0)
     info_win.clrtoeol
     info_win.addstr(geo.time.strftime("%Y-%m-%d"))
@@ -804,35 +814,40 @@ class MyStarsWindows < MyStars
     info_win.refresh
   end
 
-  def self.updateMag(info_win)
+  def self.updateMag
+    info_win = App::INFO_WIN
     info_win.setpos(2,0)
     info_win.clrtoeol
     info_win.addstr(App::Settings.mag.to_s + " degrees")
     info_win.refresh
   end
 
-  def self.updateVisMag(info_win)
+  def self.updateVisMag
+    info_win = App::INFO_WIN
     info_win.setpos(4,3)
     info_win.clrtoeol
     info_win.addstr(App::Settings.vis_mag.to_s) 
     info_win.refresh
   end
 
-  def self.updateLon(info_win)
+  def self.updateLon
+    info_win = App::INFO_WIN
     info_win.setpos(33,0)
     info_win.clrtoeol
     info_win.addstr(App::Settings.lon.to_s)
     info_win.refresh
   end
 
-  def self.updateLat(info_win)
+  def self.updateLat
+    info_win = App::INFO_WIN
     info_win.setpos(35,0)
     info_win.clrtoeol
     info_win.addstr(App::Settings.lat.to_s)
     info_win.refresh
   end
 
-  def self.updateGeo(info_win)
+  def self.updateGeo
+    info_win = App::INFO_WIN
     # Help screen popup with command key list
     win = Curses.stdscr
     geowin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
@@ -856,7 +871,7 @@ class MyStarsWindows < MyStars
       geowin.setpos(3,2)
       App::Settings.lon = geowin.getstr.to_f
     end
-    MyStarsWindows.updateLon(info_win)
+    MyStarsWindows.updateLon
     geowin.setpos(4,2)
     geowin.addstr("Enter your latitude as decimal degrees, West is negative")
     geowin.setpos(5,2)
@@ -874,7 +889,7 @@ class MyStarsWindows < MyStars
       geowin.setpos(5,2)
       App::Settings.lat = geowin.getstr.to_f
     end
-    MyStarsWindows.updateLat(info_win)
+    MyStarsWindows.updateLat
     Curses.noecho
     Curses.curs_set(0)
     geowin.refresh
@@ -884,7 +899,9 @@ class MyStarsWindows < MyStars
     geowin.close
   end
 
-  def self.selectID(win, info_win)
+  def self.selectID
+    win = App::WIN
+    info_win = App::INFO_WIN
     # Highlight the currently selected object
     star = App::Settings.in_view.members.find { |object| object.id == App::Settings.selected_id }
 
@@ -902,7 +919,9 @@ class MyStarsWindows < MyStars
     end 
   end
 
-  def self.selectNext(win, info_win)
+  def self.selectNext
+    win = App::WIN
+    info_win = App::INFO_WIN
     # Highlight the next object in current view
     if App::Settings.in_view.members.empty?
       return nil
@@ -931,7 +950,9 @@ class MyStarsWindows < MyStars
     MyStarsWindows.updateTargetInfo(info_win)
   end
 
-  def self.selectPrev(win, info_win)
+  def self.selectPrev
+    win = App::WIN
+    info_win = App::INFO_WIN
     # Highlight the previous object in current view
     if App::Settings.in_view.members.empty?
       return nil
