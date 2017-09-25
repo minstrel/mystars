@@ -23,11 +23,37 @@ begin
   win.addstr("Enter your longitude as decimal degrees, West is negative")
   win.setpos(win.maxy / 2 + 1, 5)
   App::Settings.lon = win.getstr.to_f
+  while !App::Settings.lon.between?(-180,180)
+    win.setpos(win.maxy / 2 + 1, 5)
+    win.clrtoeol
+    win.setpos(win.maxy / 2, 5)
+    win.clrtoeol
+    win.addstr("Out of bounds, must be between -180 and 180, press any key")
+    win.getch
+    win.setpos(win.maxy / 2, 5)
+    win.clrtoeol
+    win.addstr("Enter your longitude as decimal degrees, West is negative")
+    win.setpos(win.maxy / 2 + 1, 5)
+    App::Settings.lon = win.getstr.to_f
+  end
   MyStarsWindows.updateLon(info_win)
   win.setpos(win.maxy / 2 + 2, 5)
   win.addstr("Enter your latitude as decimal degrees, South is negative")
   win.setpos(win.maxy / 2 + 3, 5)
   App::Settings.lat = win.getstr.to_f
+  while !App::Settings.lat.between?(-90,90)
+    win.setpos(win.maxy / 2 + 3, 5)
+    win.clrtoeol
+    win.setpos(win.maxy / 2 + 2, 5)
+    win.clrtoeol
+    win.addstr("Out of bounds, must be between -90 and 90, press any key")
+    win.getch
+    win.setpos(win.maxy / 2 + 2, 5)
+    win.clrtoeol
+    win.addstr("Enter your longitude as decimal degrees, West is negative")
+    win.setpos(win.maxy / 2 + 3, 5)
+    App::Settings.lat = win.getstr.to_f
+  end
   MyStarsWindows.updateLat(info_win)
   # Don't echo input
   Curses.noecho
