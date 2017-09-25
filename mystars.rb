@@ -21,7 +21,7 @@ class Numeric
 end
 
 def testcollection
-  collection = MyStars.newstars_from_JSON(File.read('./data/mystars_6.json', :encoding => 'UTF-8'))
+  collection = MyStars.newstars('./data/mystars_6.json')
   geo = MyStarsGeo.new(-71.5,43.2)
   collection.localize(geo)
   collection
@@ -65,10 +65,10 @@ class MyStars
   # values of long to RA in decimal hours.
   #   TODO
   # This should just get moved to MyStarsStars
-  def self.newstars_from_JSON(file)
+  def self.newstars(file)
     stars = MyStarsStars.new
-    data = JSON.parse(file)
-    data['features'].each do |star|
+    data = JSON.parse(File.read(file, :encoding => "utf-8"))['features']
+    data.each do |star|
       newstar = MyStarsStar.new
       newstar.id = star['id']
       newstar.name = star['properties']['name']
@@ -530,7 +530,7 @@ class MyStarsWindows < MyStars
       end 
       points_to_draw.uniq!
       points_to_draw.each do |point|
-        if (point[:y].between?(0,win.maxy)) && (point[:x].between?(0,win.maxx))
+        if (point[:y].between?(0,win.maxy-1)) && (point[:x].between?(0,win.maxx-1))
           win.setpos(point[:y], point[:x])
           win.addstr("·")
         end
