@@ -6,6 +6,8 @@ require_relative 'lib/mystars'
 require_relative 'lib/mystars_geo'
 require_relative 'lib/mystars_constellation_line'
 require_relative 'lib/mystars_constellation_lines'
+require_relative 'lib/mystars_constellation_label'
+require_relative 'lib/mystars_constellation_labels'
 
 # Main queue to receive user requests as well as timers and other input.
 main_input = Queue.new
@@ -101,7 +103,7 @@ begin
   # Create a new collection based on mag 6 and brighter
   App::Settings.collection = MyStarsStars.new('./data/mystars_6.json')
   # Get constellation names
-  App::Settings.constellation_names = MyStarsConstellations.new('./data/constellations.json')
+  App::Settings.constellation_names = MyStarsConstellationLabels.new('./data/constellations.json')
   # Get constellation lines
   App::Settings.constellation_lines = MyStarsConstellationLines.new('./data/constellations.lines.json')
   # Main input loop
