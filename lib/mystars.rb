@@ -162,43 +162,6 @@ class MyStarsConstellationLines < MyStars
     [xpos, ypos]
   end
 
-  # TODO this is ugly too, defined here taking coords as input and in
-  # MyStarsStars as taking stars as input
-  def self.create_points(x0,y0,x1,y1)
-    points = []
-    steep = ((y1-y0).abs) > ((x1-x0).abs)
-    if steep
-      x0,y0 = y0,x0
-      x1,y1 = y1,x1
-    end
-    if x0 > x1
-      x0,x1 = x1,x0
-      y0,y1 = y1,y0
-    end
-    deltax = x1-x0
-    deltay = (y1-y0).abs
-    error = (deltax / 2).to_i
-    y = y0
-    ystep = nil
-    if y0 < y1
-      ystep = 1
-    else
-      ystep = -1
-    end
-    for x in x0..x1
-      if steep
-        points << {:x => y, :y => x}
-      else
-        points << {:x => x, :y => y}
-      end
-      error -= deltay
-      if error < 0
-        y += ystep
-        error += deltax
-      end
-    end
-    return points
-  end
 end
 
 class MyStarsStars < MyStars
@@ -222,50 +185,6 @@ class MyStarsStars < MyStars
       cx = Math.cos(star.alt.to_rad) * Math.cos(star.az.to_rad)
       star.cart_world = Matrix.column_vector([cx,cy,cz,1])
     end
-  end
-
-  # Create an array of vectors to draw a line between two stars
-  # Creates screen relative endpoints then passes them to create_points to draw
-  # Bresenham algorithm
-
-  def self.create_points(s1,s2)
-    x0 = s1.screen_coords(win)[0]
-    x1 = s2.screen_coords(win)[0]
-    y0 = s1.screen_coords(win)[1]
-    y1 = s2.screen_coords(win)[1]
-    points = []
-    steep = ((y1-y0).abs) > ((x1-x0).abs)
-    if steep
-      x0,y0 = y0,x0
-      x1,y1 = y1,x1
-    end
-    if x0 > x1
-      x0,x1 = x1,x0
-      y0,y1 = y1,y0
-    end
-    deltax = x1-x0
-    deltay = (y1-y0).abs
-    error = (deltax / 2).to_i
-    y = y0
-    ystep = nil
-    if y0 < y1
-      ystep = 1
-    else
-      ystep = -1
-    end
-    for x in x0..x1
-      if steep
-        points << {:x => y, :y => x}
-      else
-        points << {:x => x, :y => y}
-      end
-      error -= deltay
-      if error < 0
-        y += ystep
-        error += deltax
-      end
-    end
-    return points
   end
 
 end
@@ -404,7 +323,7 @@ class MyStarsWindows < MyStars
           if line[i+1]
             x0, y0 = MyStarsConstellationLines.screen_coords(win,point) 
             x1, y1 = MyStarsConstellationLines.screen_coords(win,line[i+1]) 
-            points_to_draw += MyStarsConstellationLines.create_points(x0,y0,x1,y1)
+            points_to_draw += Stars3D.create_points(x0,y0,x1,y1)
           end
         end 
       end 
@@ -490,7 +409,7 @@ class MyStarsWindows < MyStars
           if gp[2,0].between?(0,1)
           x0, y0 = MyStarsConstellationLines.screen_coords(win,gp) 
           x1, y1 = MyStarsConstellationLines.screen_coords(win,ground_projection[i+1]) 
-          horizon_points_to_draw += MyStarsConstellationLines.create_points(x0,y0,x1,y1)
+          horizon_points_to_draw += Stars3D.create_points(x0,y0,x1,y1)
           end
         end
       end
