@@ -99,7 +99,7 @@ begin
   # Create a new collection based on mag 6 and brighter
   App::Settings.collection = MyStarsStars.new('./data/mystars_6.json')
   # Get constellation names
-  App::Settings.constellation_names = MyStars.newconstellations('./data/constellations.json')
+  App::Settings.constellation_names = MyStarsConstellations.new('./data/constellations.json')
   # Get constellation lines
   App::Settings.constellation_lines = MyStars.newconstellation_lines('./data/constellations.lines.json')
   # Main input loop
@@ -111,7 +111,7 @@ begin
       # Add alt and azi data to the collection and add it to world matrix
       App::Settings.collection.localize(geo)
       # Add constellation names to the world matrix
-      App::Settings.constellation_names.each { |con| con.localize(geo) }
+      App::Settings.constellation_names.members.each { |con| con.localize(geo) }
       # Add constellation lines to the world martix
       App::Settings.constellation_lines.each { |conline| conline.localize(geo) }
       # Draw a window centered around the input coords

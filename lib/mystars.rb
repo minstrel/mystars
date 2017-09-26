@@ -18,42 +18,6 @@ class MyStars
   # Parent class for everything else.
   # Right now it contains creator methods for the different data types.
 
-  # Pass in a file object with star data and get back an array of MyStarsStar
-  # objects.
-  # For now I'm going to use the JSON files as-is, converting -180 - 180
-  # values of long to RA in decimal hours.
-  #def self.newstars(file)
-  #  stars = MyStarsStars.new
-  #  data = JSON.parse(File.read(file, :encoding => "utf-8"))['features']
-  #  data.each do |star|
-  #    newstar = MyStarsStar.new
-  #    newstar.id = star['id']
-  #    newstar.name = star['properties']['name']
-  #    newstar.mag = star['properties']['mag'].to_f
-  #    newstar.desig = star['properties']['desig']
-  #    newstar.con = star['properties']['con'] 
-  #    newstar.ra = star['geometry']['coordinates'][0].long_to_ra.to_f
-  #    newstar.dec = star['geometry']['coordinates'][1].to_f
-  #    stars.members << newstar
-  #  end
-  #  stars
-  #end
-
-  # Pass in a file with constellation name data and get back an array of
-  # MyStarsConstellation objects.
-  def self.newconstellations(file)
-    constellations = []
-    data = JSON.parse(File.read(file, :encoding => "utf-8"))['features']
-    data.each do |con|
-      name = con["properties"]["name"]
-      genitive = con["properties"]["gen"]
-      ra = con['geometry']['coordinates'][0].long_to_ra.to_f
-      dec = con['geometry']['coordinates'][1].to_f
-      constellations << MyStarsConstellation.new({:name => name, :genitive => genitive, :ra => ra, :dec => dec})
-    end
-    constellations
-  end
-
   # Pass in a file with constellation line vertices and get back an array
   # of MyStarsConstellationLines objects.
   def self.newconstellation_lines(file)
@@ -116,6 +80,29 @@ class MyStarsConstellation < MyStars
     xpos = win.maxx - (((@cart_proj[0,0] + 1) / 2.0) * win.maxx).round
     ypos = win.maxy - (((@cart_proj[1,0] + 1) / 2.0) * win.maxy).round
     [xpos, ypos]
+  end
+
+end
+
+class MyStarsConstellations < MyStars
+
+  # A collection of MyStarsConstellation objects
+  attr_accessor :members
+
+  def initialize(file=nil)
+    @members = []
+    if file
+      # Pass in a file with constellation name data and get back an array of
+      # MyStarsConstellation objects.
+      data = JSON.parse(File.read(file, :encoding => "utf-8"))['features']
+      data.each do |con|
+        name = con["properties"]["name"]
+        genitive = con["properties"]["gen"]
+        ra = con['geometry']['coordinates'][0].long_to_ra.to_f
+        dec = con['geometry']['coordinates'][1].to_f
+        @members << MyStarsConstellation.new({:name => name, :genitive => genitive, :ra => ra, :dec => dec})
+      end
+    end
   end
 
 end
@@ -285,7 +272,7 @@ class MyStarsWindows < MyStars
     # Get the in-view constellations
     if App::Settings.show_constellations
       in_view_constellation_names = []
-      App::Settings.constellation_names.each do |con|
+      App::Settings.constellation_names.members.each do |con|
         con.cart_proj = pv * con.cart_world 
         if con.cart_proj[0,0].between?(-1,1) && con.cart_proj[1,0].between?(-1,1) && con.cart_proj[2,0].between?(0,1)
         in_view_constellation_names << con
