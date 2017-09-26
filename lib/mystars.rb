@@ -182,6 +182,66 @@ class MyStarsConstellationLines < MyStars
     end
   end
 
+  def draw(pv)
+    # Get and draw in-view constellation lines
+    win = App::WIN
+    if App::Settings.show_constellations
+    # Project all the line points into projection view
+    # code
+      @members.each do |con|
+        new_proj_set = []
+        con.cart_world_set.each do |line|
+          new_proj_line = []
+          line.each do |point|
+            newpoint = pv * point
+            new_proj_line << newpoint
+          end
+          new_proj_set << new_proj_line
+        end
+        con.cart_proj_set = new_proj_set
+      end
+    # Get all the lines containing points that are in the current screen
+    # code
+      on_screen_lines = []
+      @members.each do |con|
+        con.cart_proj_set.each do |line|
+          line.each do |point|
+            if point[0,0].between?(-1,1) && point[1,0].between?(-1,1) && point[2,0].between?(0,1)
+              on_screen_lines << line
+            end
+          end
+        end
+      end
+      on_screen_lines.uniq!
+    # Draw lines between all those points and the previous and next points,
+    # if they exist.
+    # There's going to be a lot of duplication here, but it's small so clean
+    # it up later.
+    # Drop any points that have negative x and y values
+    # code
+    # Iterate through each line, calculate on-screen coords, then run those
+    # through the Bresenham algorithm.  Add all those points to another array,
+    # dropping any that are negative x and y
+      points_to_draw = []
+      on_screen_lines.each do |line|
+        line.each.with_index do |point, i|
+          if line[i+1]
+            x0, y0 = MyStarsConstellationLine.screen_coords(win,point) 
+            x1, y1 = MyStarsConstellationLine.screen_coords(win,line[i+1]) 
+            points_to_draw += Stars3D.create_points(x0,y0,x1,y1)
+          end
+        end 
+      end 
+      points_to_draw.uniq!
+      points_to_draw.each do |point|
+        if (point[:y].between?(0,win.maxy-1)) && (point[:x].between?(0,win.maxx-1))
+          win.setpos(point[:y], point[:x])
+          win.addstr("·")
+        end
+      end
+    end
+  end
+
 end
 
 class MyStarsStars < MyStars
@@ -304,63 +364,8 @@ class MyStarsWindows < MyStars
 
     # Clear the window and draw the in-view members and constellations
     win.clear
-    # TODO
-    # Get and draw in-view constellation lines
-    if App::Settings.show_constellations
-    # Project all the line points into projection view
-    # code
-      App::Settings.constellation_lines.members.each do |con|
-        new_proj_set = []
-        con.cart_world_set.each do |line|
-          new_proj_line = []
-          line.each do |point|
-            newpoint = pv * point
-            new_proj_line << newpoint
-          end
-          new_proj_set << new_proj_line
-        end
-        con.cart_proj_set = new_proj_set
-      end
-    # Get all the lines containing points that are in the current screen
-    # code
-      on_screen_lines = []
-      App::Settings.constellation_lines.members.each do |con|
-        con.cart_proj_set.each do |line|
-          line.each do |point|
-            if point[0,0].between?(-1,1) && point[1,0].between?(-1,1) && point[2,0].between?(0,1)
-              on_screen_lines << line
-            end
-          end
-        end
-      end
-      on_screen_lines.uniq!
-    # Draw lines between all those points and the previous and next points,
-    # if they exist.
-    # There's going to be a lot of duplication here, but it's small so clean
-    # it up later.
-    # Drop any points that have negative x and y values
-    # code
-    # Iterate through each line, calculate on-screen coords, then run those
-    # through the Bresenham algorithm.  Add all those points to another array,
-    # dropping any that are negative x and y
-      points_to_draw = []
-      on_screen_lines.each do |line|
-        line.each.with_index do |point, i|
-          if line[i+1]
-            x0, y0 = MyStarsConstellationLine.screen_coords(win,point) 
-            x1, y1 = MyStarsConstellationLine.screen_coords(win,line[i+1]) 
-            points_to_draw += Stars3D.create_points(x0,y0,x1,y1)
-          end
-        end 
-      end 
-      points_to_draw.uniq!
-      points_to_draw.each do |point|
-        if (point[:y].between?(0,win.maxy-1)) && (point[:x].between?(0,win.maxx-1))
-          win.setpos(point[:y], point[:x])
-          win.addstr("·")
-        end
-      end
-    end
+    ## Get and draw in-view constellation lines
+    App::Settings.constellation_lines.draw(pv)
 
     # Draw in-view stars
     App::Settings.in_view.members.each do |star|
