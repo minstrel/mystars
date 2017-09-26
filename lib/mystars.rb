@@ -19,7 +19,7 @@ class MyStars
 end
 
 class MyStarsStar < MyStars
-  # a single star
+  # A single star
   #
   # cart_world is the cartesian coordinate column vector in the world
   # cart_proj is the cartesian coordinate column_vector in the current
@@ -73,6 +73,75 @@ class MyStarsStars < MyStars
     end
   end
 
+  def draw(pv)
+    # Draw current stars in DB to screen.
+
+    # This is probably inefficent as it polls all available stars, but
+    # hopefully good enough for now.
+
+    win = App::WIN
+
+    # Filter out stars below visible magnitude
+    collection = @members.select { |member| member.mag <= App::Settings.vis_mag }
+
+    # If we're drawing a window, the in_view stars have moved, so clear it
+    App::Settings.in_view = MyStarsStars.new
+
+    # Add visible stars to in view collection
+    collection.each do |star|
+      star.cart_proj = pv * star.cart_world
+      if star.cart_proj[0,0].between?(-1,1) && star.cart_proj[1,0].between?(-1,1) && star.cart_proj[2,0].between?(0,1)
+        App::Settings.in_view.members << star
+      end
+    end
+
+    # If the ground is showing, discard stars below 0 altitude
+    if App::Settings.show_ground
+      App::Settings.in_view.members = App::Settings.in_view.members.reject { |star| star.alt < 0.0 }
+    end
+
+    # This should get outsourced to the MyStarsStar instead
+    # Draw in-view stars
+    App::Settings.in_view.members.each do |star|
+      xpos, ypos = star.screen_coords(win)
+      win.setpos(ypos,xpos)
+      win.addstr("*")
+      win.setpos(ypos+1,xpos)
+      # This is to fix text wrapping, not great but good enough for now
+      case App::Settings.labels
+      when :named
+        if !star.name.empty?
+          if (xpos + (star.name).length) > win.maxx
+            win.setpos(ypos+1, win.maxx - star.name.length)
+          end
+          win.addstr(star.name)
+        end
+      when :all
+        if !star.name.empty?
+          if (xpos + (star.name).length) > win.maxx
+            win.setpos(ypos+1, win.maxx - star.name.length)
+          end
+          win.addstr(star.name)
+        else
+          if (xpos + (star.desig + " " + star.con).length) > win.maxx
+            win.setpos(ypos+1, win.maxx - (star.desig + "  " + star.con).length)
+          end
+          win.addstr(star.desig + " " + star.con)
+        end
+      when :none
+      end
+    end
+
+    # Sort the in_view stars by x, then y for tabbing
+    # Might be worth benchmarking later...
+    App::Settings.in_view.members.sort! do |a, b|
+      (a.cart_proj[1,0] + 1.0) * 1000 - (a.cart_proj[0,0] + 1.0) <=> (b.cart_proj[1,0] + 1.0) * 1000 - (b.cart_proj[0,0] + 1.0)
+    end
+    # Sort it better instead of doing this.
+    App::Settings.in_view.members.reverse!
+
+  end
+
 end
 
 class MyStarsWindows < MyStars
@@ -110,94 +179,37 @@ class MyStarsWindows < MyStars
   end
 
   def self.drawWindow
-    # This is probably inefficent as it polls all available stars, but
-    # hopefully good enough for now.
+    # Draws the current viewscreen.
 
-    # Takes a collection, x and y coords to center on and window to act on
-    # and draws window.
-
-    # Iterate through visible stars and try to plot on current screen,
-    # given 10 degrees FOV N-S (IE y axis) and enough to fill E-W (x axis)
-
+    # The current screen
     win = App::WIN
-
-    # Filter out stars below visible magnitude
-    collection = App::Settings.collection.members.select { |member| member.mag <= App::Settings.vis_mag }
 
     # Get desired viewing range in degrees
     mag = App::Settings.mag
 
-    # If we're drawing a window, the in_view stars have moved, so clear it
-    App::Settings.in_view = MyStarsStars.new
-
-    # Multiply each star by the view and projection matrix, add in-view stars
-    # to in_view collection
+    # Create the projection view matrix to pass to all the draw methods.
     view = Stars3D.view(0,0,0,App::Settings.facing_y.to_rad,App::Settings.facing_xz.to_rad,0)
     width = ((win.maxx.to_f / win.maxy.to_f) * mag).to_rad
-    # Adjust width to compensate for terminal character size
+
+    # Width adjustment to compensate for terminal character size
     # This is pretty arbritrary but I don't see a better way right now
     width = width * 0.5
+
     height = mag.to_rad
     projection = Stars3D.projection(width, height, 0.25, 1.0)
     pv = projection * view
-    collection.each do |star|
-      star.cart_proj = pv * star.cart_world
-      if star.cart_proj[0,0].between?(-1,1) && star.cart_proj[1,0].between?(-1,1) && star.cart_proj[2,0].between?(0,1)
-        App::Settings.in_view.members << star
-      end
-    end
 
-    # If the ground is showing, discard stars below 0 altitude
-    if App::Settings.show_ground
-      App::Settings.in_view.members = App::Settings.in_view.members.reject { |star| star.alt < 0.0 }
-    end
-
-    # Clear the window and draw the in-view members and constellations
+    # Clear the window
     win.clear
-    ## Get and draw in-view constellation lines
+
+    # Draw in-view constellation lines
     App::Settings.constellation_lines.draw(pv)
 
     # Draw in-view stars
-    App::Settings.in_view.members.each do |star|
-      xpos, ypos = star.screen_coords(win)
-      win.setpos(ypos,xpos)
-      win.addstr("*")
-      win.setpos(ypos+1,xpos)
-      # This is to fix text wrapping, not great but good enough for now
-      case App::Settings.labels
-      when :named
-        if !star.name.empty?
-          if (xpos + (star.name).length) > win.maxx
-            win.setpos(ypos+1, win.maxx - star.name.length)
-          end
-          win.addstr(star.name)
-        end
-      when :all
-        if !star.name.empty?
-          if (xpos + (star.name).length) > win.maxx
-            win.setpos(ypos+1, win.maxx - star.name.length)
-          end
-          win.addstr(star.name)
-        else
-          if (xpos + (star.desig + " " + star.con).length) > win.maxx
-            win.setpos(ypos+1, win.maxx - (star.desig + "  " + star.con).length)
-          end
-          win.addstr(star.desig + " " + star.con)
-        end
-      when :none
-      end
-    end
+    App::Settings.collection.draw(pv)
 
     # Draw in-view constellations
     App::Settings.constellation_names.draw(pv)
-
-    # Sort the in_view stars by x, then y for tabbing
-    # Might be worth benchmarking later...
-    App::Settings.in_view.members.sort! do |a, b|
-      (a.cart_proj[1,0] + 1.0) * 1000 - (a.cart_proj[0,0] + 1.0) <=> (b.cart_proj[1,0] + 1.0) * 1000 - (b.cart_proj[0,0] + 1.0)
-    end
-    # Sort it better instead of doing this.
-    App::Settings.in_view.members.reverse!
     
     # Draw the ground, if toggled
     if App::Settings.show_ground
