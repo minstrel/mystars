@@ -105,6 +105,32 @@ class MyStarsConstellations < MyStars
     end
   end
 
+  def draw(pv)
+    if App::Settings.show_constellations
+    # Get the in-view constellations
+      in_view_constellation_names = []
+      App::Settings.constellation_names.members.each do |con|
+        con.cart_proj = pv * con.cart_world 
+        if con.cart_proj[0,0].between?(-1,1) && con.cart_proj[1,0].between?(-1,1) && con.cart_proj[2,0].between?(0,1)
+        in_view_constellation_names << con
+        end
+      end
+
+    # Draw in-view constellations
+      win = App::WIN
+      in_view_constellation_names.each do |con|
+        xpos, ypos = con.screen_coords(win)
+        if (xpos + (con.name).length / 2 + 1) > win.maxx
+          win.setpos(ypos, win.maxx - (con.name).length - 1)
+        else
+          win.setpos(ypos,xpos)
+        end
+        win.addstr(con.name)
+      end
+    end
+
+  end
+
 end
 
 class MyStarsConstellationLines < MyStars
@@ -269,17 +295,6 @@ class MyStarsWindows < MyStars
       App::Settings.in_view.members = App::Settings.in_view.members.reject { |star| star.alt < 0.0 }
     end
 
-    # Get the in-view constellations
-    if App::Settings.show_constellations
-      in_view_constellation_names = []
-      App::Settings.constellation_names.members.each do |con|
-        con.cart_proj = pv * con.cart_world 
-        if con.cart_proj[0,0].between?(-1,1) && con.cart_proj[1,0].between?(-1,1) && con.cart_proj[2,0].between?(0,1)
-        in_view_constellation_names << con
-        end
-      end
-    end
-     
     # Clear the window and draw the in-view members and constellations
     win.clear
     # Get and draw in-view constellation lines
@@ -371,18 +386,7 @@ class MyStarsWindows < MyStars
     end
 
     # Draw in-view constellations
-    if App::Settings.show_constellations
-      in_view_constellation_names.each do |con|
-        xpos, ypos = con.screen_coords(win)
-        if (xpos + (con.name).length / 2 + 1) > win.maxx
-          win.setpos(ypos, win.maxx - (con.name).length - 1)
-        else
-          win.setpos(ypos,xpos)
-        end
-        win.addstr(con.name)
-      end
-    end
-
+    App::Settings.constellation_names.draw(pv)
 
     # Sort the in_view stars by x, then y for tabbing
     # Might be worth benchmarking later...
