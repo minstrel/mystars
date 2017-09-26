@@ -4,6 +4,8 @@
 require_relative 'lib/app'
 require_relative 'lib/mystars'
 require_relative 'lib/mystars_geo'
+require_relative 'lib/mystars_constellation_line'
+require_relative 'lib/mystars_constellation_lines'
 
 # Main queue to receive user requests as well as timers and other input.
 main_input = Queue.new
