@@ -7,7 +7,7 @@ require_relative 'stars3d'
 require_relative 'helpers'
 
 def testcollection
-  collection = MyStars.newstars('./data/mystars_6.json')
+  collection = MyStarsStars.new('./data/mystars_6.json')
   geo = MyStarsGeo.new(-71.5,43.2)
   collection.localize(geo)
   collection
@@ -22,22 +22,22 @@ class MyStars
   # objects.
   # For now I'm going to use the JSON files as-is, converting -180 - 180
   # values of long to RA in decimal hours.
-  def self.newstars(file)
-    stars = MyStarsStars.new
-    data = JSON.parse(File.read(file, :encoding => "utf-8"))['features']
-    data.each do |star|
-      newstar = MyStarsStar.new
-      newstar.id = star['id']
-      newstar.name = star['properties']['name']
-      newstar.mag = star['properties']['mag'].to_f
-      newstar.desig = star['properties']['desig']
-      newstar.con = star['properties']['con'] 
-      newstar.ra = star['geometry']['coordinates'][0].long_to_ra.to_f
-      newstar.dec = star['geometry']['coordinates'][1].to_f
-      stars.members << newstar
-    end
-    stars
-  end
+  #def self.newstars(file)
+  #  stars = MyStarsStars.new
+  #  data = JSON.parse(File.read(file, :encoding => "utf-8"))['features']
+  #  data.each do |star|
+  #    newstar = MyStarsStar.new
+  #    newstar.id = star['id']
+  #    newstar.name = star['properties']['name']
+  #    newstar.mag = star['properties']['mag'].to_f
+  #    newstar.desig = star['properties']['desig']
+  #    newstar.con = star['properties']['con'] 
+  #    newstar.ra = star['geometry']['coordinates'][0].long_to_ra.to_f
+  #    newstar.dec = star['geometry']['coordinates'][1].to_f
+  #    stars.members << newstar
+  #  end
+  #  stars
+  #end
 
   # Pass in a file with constellation name data and get back an array of
   # MyStarsConstellation objects.
@@ -169,9 +169,25 @@ class MyStarsStars < MyStars
 
   attr_accessor :members, :selected
 
-  def initialize
+  def initialize(file=nil)
     @members = []
     @selected = -1
+    # Current file uses longitude, converting -180 to 180 long to RA for now.
+    # Better later to rewrite the files.
+    if file
+      data = JSON.parse(File.read(file, :encoding => "utf-8"))['features']
+      data.each do |star|
+        newstar = MyStarsStar.new
+        newstar.id = star['id']
+        newstar.name = star['properties']['name']
+        newstar.mag = star['properties']['mag'].to_f
+        newstar.desig = star['properties']['desig']
+        newstar.con = star['properties']['con'] 
+        newstar.ra = star['geometry']['coordinates'][0].long_to_ra.to_f
+        newstar.dec = star['geometry']['coordinates'][1].to_f
+        @members << newstar
+      end
+    end
   end
 
   # Update altitude and azimuth with local data from a MyStarsGeo object

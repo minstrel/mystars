@@ -97,7 +97,7 @@ begin
     end
   end
   # Create a new collection based on mag 6 and brighter
-  App::Settings.collection = MyStars.newstars('./data/mystars_6.json')
+  App::Settings.collection = MyStarsStars.new('./data/mystars_6.json')
   # Get constellation names
   App::Settings.constellation_names = MyStars.newconstellations('./data/constellations.json')
   # Get constellation lines
