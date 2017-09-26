@@ -14,31 +14,8 @@ def testcollection
 end
 
 class MyStars
-
   # Parent class for everything else.
-  # Right now it contains creator methods for the different data types.
 
-  # Pass in a file with constellation line vertices and get back an array
-  # of MyStarsConstellationLines objects.
-  def self.newconstellation_lines(file)
-    constellation_lines = []
-    constellations = JSON.parse(File.read(file, :encoding => 'utf-8'))['features']
-    constellations.each do |constellation|
-      # The 'ser' ID is duplicated in the data, we're not using ID yet but
-      # keep this note if issues arise later.
-      coordset = []
-      constellation['geometry']['coordinates'].each do |lines|
-        newline = []
-        lines.each do |point|
-          newline << [point[0].long_to_ra.to_f, point[1].to_f]
-        end
-        coordset << newline
-      end
-      newconst = MyStarsConstellationLines.new(:id => constellation['id'], :coordinates => coordset )
-      constellation_lines << newconst
-    end 
-    constellation_lines
-  end
 end
 
 class MyStarsStar < MyStars
@@ -133,7 +110,7 @@ class MyStarsConstellations < MyStars
 
 end
 
-class MyStarsConstellationLines < MyStars
+class MyStarsConstellationLine < MyStars
   # A set of points of a constellation (the pattern itself, not the bounds)
   # Note that the coordinate sets are arrays of arrays of arrays - multiple
   # lines making up the constellation.
@@ -173,6 +150,36 @@ class MyStarsConstellationLines < MyStars
     xpos = win.maxx - (((vector[0,0] + 1) / 2.0) * win.maxx).round
     ypos = win.maxy - (((vector[1,0] + 1) / 2.0) * win.maxy).round
     [xpos, ypos]
+  end
+
+end
+
+class MyStarsConstellationLines < MyStars
+  # A collection of MyStarsConstellationLine objects, each representing the
+  # lines of a single constellation.
+  attr_accessor :members
+
+  def initialize(file=nil)
+    @members = []
+    if file
+      # Pass in a file with constellation line vertices and get back an array
+      # of MyStarsConstellationLine objects.
+      constellations = JSON.parse(File.read(file, :encoding => 'utf-8'))['features']
+      constellations.each do |constellation|
+        # The 'ser' ID is duplicated in the data, we're not using ID yet but
+        # keep this note if issues arise later.
+        coordset = []
+        constellation['geometry']['coordinates'].each do |lines|
+          newline = []
+          lines.each do |point|
+            newline << [point[0].long_to_ra.to_f, point[1].to_f]
+          end
+          coordset << newline
+        end
+        newconst = MyStarsConstellationLine.new(:id => constellation['id'], :coordinates => coordset )
+        @members << newconst
+      end 
+    end
   end
 
 end
@@ -297,11 +304,12 @@ class MyStarsWindows < MyStars
 
     # Clear the window and draw the in-view members and constellations
     win.clear
+    # TODO
     # Get and draw in-view constellation lines
     if App::Settings.show_constellations
     # Project all the line points into projection view
     # code
-      App::Settings.constellation_lines.each do |con|
+      App::Settings.constellation_lines.members.each do |con|
         new_proj_set = []
         con.cart_world_set.each do |line|
           new_proj_line = []
@@ -316,7 +324,7 @@ class MyStarsWindows < MyStars
     # Get all the lines containing points that are in the current screen
     # code
       on_screen_lines = []
-      App::Settings.constellation_lines.each do |con|
+      App::Settings.constellation_lines.members.each do |con|
         con.cart_proj_set.each do |line|
           line.each do |point|
             if point[0,0].between?(-1,1) && point[1,0].between?(-1,1) && point[2,0].between?(0,1)
@@ -339,8 +347,8 @@ class MyStarsWindows < MyStars
       on_screen_lines.each do |line|
         line.each.with_index do |point, i|
           if line[i+1]
-            x0, y0 = MyStarsConstellationLines.screen_coords(win,point) 
-            x1, y1 = MyStarsConstellationLines.screen_coords(win,line[i+1]) 
+            x0, y0 = MyStarsConstellationLine.screen_coords(win,point) 
+            x1, y1 = MyStarsConstellationLine.screen_coords(win,line[i+1]) 
             points_to_draw += Stars3D.create_points(x0,y0,x1,y1)
           end
         end 
@@ -414,8 +422,8 @@ class MyStarsWindows < MyStars
       ground_projection.each.with_index do |gp, i|
         if ground_projection[i+1]
           if gp[2,0].between?(0,1)
-          x0, y0 = MyStarsConstellationLines.screen_coords(win,gp) 
-          x1, y1 = MyStarsConstellationLines.screen_coords(win,ground_projection[i+1]) 
+          x0, y0 = MyStarsConstellationLine.screen_coords(win,gp) 
+          x1, y1 = MyStarsConstellationLine.screen_coords(win,ground_projection[i+1]) 
           horizon_points_to_draw += Stars3D.create_points(x0,y0,x1,y1)
           end
         end
