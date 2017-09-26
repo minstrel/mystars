@@ -8,6 +8,8 @@ require_relative 'lib/mystars_constellation_line'
 require_relative 'lib/mystars_constellation_lines'
 require_relative 'lib/mystars_constellation_label'
 require_relative 'lib/mystars_constellation_labels'
+require_relative 'lib/mystars_star'
+require_relative 'lib/mystars_stars'
 
 # Main queue to receive user requests as well as timers and other input.
 main_input = Queue.new
