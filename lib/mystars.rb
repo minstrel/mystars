@@ -284,7 +284,8 @@ class MyStarsWindows < MyStars
     info_win.refresh
   end
 
-  def self.updateTargetInfo(info_win)
+  def self.updateTargetInfo
+    info_win = App::INFO_WIN
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
     name = star.name.to_s
     desig = star.desig.to_s + " " + star.con
@@ -390,7 +391,6 @@ class MyStarsWindows < MyStars
 
   def self.selectID
     win = App::WIN
-    info_win = App::INFO_WIN
     # Highlight the currently selected object
     star = App::Settings.in_view.members.find { |object| object.id == App::Settings.selected_id }
 
@@ -404,13 +404,12 @@ class MyStarsWindows < MyStars
       win.addstr("*")
       win.attrset(Curses::A_NORMAL)
       win.refresh
-      MyStarsWindows.updateTargetInfo(info_win)
+      MyStarsWindows.updateTargetInfo
     end 
   end
 
   def self.selectNext
     win = App::WIN
-    info_win = App::INFO_WIN
     # Highlight the next object in current view
     if App::Settings.in_view.members.empty?
       return nil
@@ -436,12 +435,11 @@ class MyStarsWindows < MyStars
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
     win.refresh
-    MyStarsWindows.updateTargetInfo(info_win)
+    MyStarsWindows.updateTargetInfo
   end
 
   def self.selectPrev
     win = App::WIN
-    info_win = App::INFO_WIN
     # Highlight the previous object in current view
     if App::Settings.in_view.members.empty?
       return nil
@@ -467,7 +465,7 @@ class MyStarsWindows < MyStars
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
     win.refresh
-    MyStarsWindows.updateTargetInfo(info_win)
+    MyStarsWindows.updateTargetInfo
   end
 
   def self.search
