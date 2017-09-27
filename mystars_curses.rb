@@ -140,7 +140,7 @@ begin
         # 1 degree max zoom in
       when 2..15
         App::Settings.mag -= 1
-      when 20..180
+      when 20..90
         App::Settings.mag -= 5
       else
         # There shouldn't be an else... 
@@ -153,10 +153,10 @@ begin
       case App::Settings.mag
       when 1..14
         App::Settings.mag += 1
-      when 15..175
+      when 15..85
         App::Settings.mag += 5
-      when 180
-        # 180 degree max zoom out
+      when 90
+        # 90 degree max zoom out
       else
         # There shouldn't be an else here either...
       end
