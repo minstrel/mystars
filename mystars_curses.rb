@@ -188,7 +188,7 @@ begin
       App::WIN.selectID
     when 'G'
       # Update geographic location
-      MyStarsWindows.updateGeo
+      MyStarsWindow.updateGeo
       main_input << "update"
       user_input.wakeup
     when 'c'
@@ -199,7 +199,7 @@ begin
       App::WIN.selectID
     when 'H', '?'
       # Help screen
-      MyStarsWindows.help
+      MyStarsWindow.help
       user_input.wakeup
     when 'L'
       # Label visibility
@@ -209,7 +209,7 @@ begin
       App::WIN.selectID
     when 's'
       # Search screen
-      MyStarsWindows.search
+      MyStarsWindow.search
     when Curses::Key::LEFT
       App::WIN.move(:left)
       App::WIN.drawWindow
