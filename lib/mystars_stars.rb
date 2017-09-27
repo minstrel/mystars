@@ -9,6 +9,12 @@ require_relative 'mystars'
 class MyStarsStars < MyStars
   # This represents a collection of stars
 
+  # TODO Now that we're importing two types of data, both of which will be
+  # part of the in_view collection, we need a way to merge both.
+  # I think the best way is to offload the drawing itself onto the individual
+  # objects and have a draw method defined on each type.
+  # Then maybe we don't need a separate collection class for each.
+
   attr_accessor :members, :selected
 
   def initialize(file=nil)
@@ -34,14 +40,11 @@ class MyStarsStars < MyStars
 
   # Update altitude and azimuth with local data from a MyStarsGeo object
   # and add it to the world matrix
+  # TODO I don't think @cart_world gets used after this, so maybe it would be
+  # better to just draw it here or mesh this with the draw method?
   def localize(geo)
-    self.members.each do |star|
-      star.alt = geo.altitude(star.ra, star.dec)
-      star.az = geo.azimuth(star.ra, star.dec)
-      cz = ( Math.cos(star.alt.to_rad) * Math.sin(star.az.to_rad) )
-      cy = Math.sin(star.alt.to_rad)
-      cx = Math.cos(star.alt.to_rad) * Math.cos(star.az.to_rad)
-      star.cart_world = Matrix.column_vector([cx,cy,cz,1])
+    @members.each do |star|
+      star.localize(geo)
     end
   end
 
