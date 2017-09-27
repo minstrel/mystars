@@ -41,7 +41,7 @@ class MyStarsConstellationLabels < MyStars
       end
 
     # Draw in-view constellations
-      win = App::WIN
+      win = App::WIN.window
       in_view_constellation_names.each do |con|
         xpos, ypos = con.screen_coords(win)
         if (xpos + (con.name).length / 2 + 1) > win.maxx

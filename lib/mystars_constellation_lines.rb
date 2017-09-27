@@ -38,7 +38,7 @@ class MyStarsConstellationLines < MyStars
   # Actual drawing should be done by the individual objects instead.
   def draw(pv)
     # Get and draw in-view constellation lines
-    win = App::WIN
+    win = App::WIN.window
     if App::Settings.show_constellations
     # Project all the line points into projection view
     # code

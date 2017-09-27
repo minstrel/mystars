@@ -51,7 +51,7 @@ class MyStarsStars < MyStars
     # This is probably inefficent as it polls all available stars, but
     # hopefully good enough for now.
 
-    win = App::WIN
+    win = App::WIN.window
 
     # Filter out stars below visible magnitude
     collection = @members.select { |member| member.mag <= App::Settings.vis_mag }
