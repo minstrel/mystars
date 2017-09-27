@@ -137,207 +137,6 @@ class MyStarsWindows < MyStars
 
   end 
 
-  # We could store locations of info win lines as variables and reference
-  # those instead of direct locations.
-
-  def self.drawInfo
-    # Initial drawing of info window
-    info_win = App::INFO_WIN
-    info_win.setpos(1,0)
-    info_win.addstr("Field of View N/S:")
-    info_win.setpos(2,0)
-    info_win.addstr(App::Settings.mag.to_s + " degrees")
-    info_win.setpos(3,0)
-    info_win.addstr("Visible magnitude")
-    info_win.setpos(4,0)
-    info_win.addstr("<= " + App::Settings.vis_mag.to_s)
-    info_win.setpos(7,0)
-    info_win.addstr("Constellations:")
-    info_win.setpos(8,0)
-    case App::Settings.show_constellations
-    when true
-      info_win.addstr("Shown")
-    when false
-      info_win.addstr("Hidden")
-    end
-    info_win.setpos(9,0)
-    info_win.addstr("Ground:")
-    info_win.setpos(10,0)
-    case App::Settings.show_ground
-    when true
-      info_win.addstr("Shown")
-    when false
-      info_win.addstr("Hidden")
-    end
-    info_win.setpos(11,0)
-    info_win.addstr("Labels:")
-    info_win.setpos(12,0)
-    case App::Settings.labels
-    when :all
-      info_win.addstr("All stars")
-    when :named
-      info_win.addstr("Named stars only")
-    when :none
-      info_win.addstr("No star labels")
-    end
-    info_win.setpos(32,0)
-    info_win.addstr("Longitude:")
-    info_win.setpos(33,0)
-    info_win.addstr(App::Settings.lon.to_s)
-    info_win.setpos(34,0)
-    info_win.addstr("Latitude")
-    info_win.setpos(35,0)
-    info_win.addstr(App::Settings.lat.to_s)
-    info_win.setpos(14,0)
-    info_win.addstr("Current Object")
-    info_win.setpos(15,0)
-    info_win.addstr("Name:")
-    info_win.setpos(17,0)
-    info_win.addstr("Designation:")
-    info_win.setpos(19,0)
-    info_win.addstr("RA / Dec:")
-    info_win.setpos(21,0)
-    info_win.addstr("Alt / Az:")
-    info_win.setpos(38,0)
-    info_win.addstr("Facing")
-    info_win.setpos(39,0)
-    azimuth = 90 - App::Settings.facing_xz
-    if azimuth < 0
-      azimuth = 360 + azimuth
-    end
-    info_win.addstr("Azimuth: " + azimuth.to_s + " °")
-    info_win.setpos(40,0)
-    info_win.addstr("Altitude: " + (-App::Settings.facing_y).to_s + " °")
-    info_win.setpos(41,0)
-    info_win.addstr("Date")
-    info_win.setpos(43,0)
-    info_win.addstr("Time")
-    info_win.refresh
-  end
-
-  def self.updateConstellations
-    info_win = App::INFO_WIN
-    info_win.setpos(8,0)
-    info_win.clrtoeol
-    case App::Settings.show_constellations
-    when true
-      info_win.addstr("Shown")
-    when false
-      info_win.addstr("Hidden")
-    end
-    info_win.refresh
-  end
-
-  def self.updateGround
-    info_win = App::INFO_WIN
-    info_win.setpos(10,0)
-    info_win.clrtoeol
-    case App::Settings.show_ground
-    when true
-      info_win.addstr("Shown")
-    when false
-      info_win.addstr("Hidden")
-    end
-    info_win.refresh
-  end
-
-  def self.updateLabels
-    info_win = App::INFO_WIN
-    info_win.setpos(12,0)
-    info_win.clrtoeol
-    case App::Settings.labels
-    when :all
-      info_win.addstr("All stars")
-    when :named
-      info_win.addstr("Named stars only")
-    when :none
-      info_win.addstr("No star labels")
-    end
-    info_win.refresh
-  end
-
-  def self.updateFacing
-    info_win = App::INFO_WIN
-    info_win.setpos(39,0)
-    info_win.clrtoeol
-    azimuth = 90 - App::Settings.facing_xz
-    if azimuth < 0
-      azimuth = 360 + azimuth
-    end
-    info_win.addstr("Azimuth: " + azimuth.to_s + " °")
-    info_win.setpos(40,0)
-    info_win.clrtoeol
-    info_win.addstr("Altitude: " + (-App::Settings.facing_y).to_s + " °")
-    info_win.refresh
-  # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
-  # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
-  end
-
-  def self.updateTime(geo)
-    info_win = App::INFO_WIN
-    info_win.setpos(42,0)
-    info_win.clrtoeol
-    info_win.addstr(geo.time.strftime("%Y-%m-%d"))
-    info_win.setpos(44,0)
-    info_win.clrtoeol
-    info_win.addstr(geo.time.strftime("%H:%M:%S"))
-    info_win.refresh
-  end
-
-  def self.updateTargetInfo
-    info_win = App::INFO_WIN
-    star = App::Settings.in_view.members[App::Settings.in_view.selected]
-    name = star.name.to_s
-    desig = star.desig.to_s + " " + star.con
-    radec = star.ra.round(2).to_s + + " / " + star.dec.round(2).to_s
-    altaz = star.alt.round(2).to_s + " / " + star.az.round(2).to_s
-    info_win.setpos(16,0)
-    info_win.clrtoeol
-    info_win.addstr(name)
-    info_win.setpos(18,0)
-    info_win.clrtoeol
-    info_win.addstr(desig)
-    info_win.setpos(20,0)
-    info_win.clrtoeol
-    info_win.addstr(radec)
-    info_win.setpos(22,0)
-    info_win.clrtoeol
-    info_win.addstr(altaz)
-    info_win.refresh
-  end
-
-  def self.updateMag
-    info_win = App::INFO_WIN
-    info_win.setpos(2,0)
-    info_win.clrtoeol
-    info_win.addstr(App::Settings.mag.to_s + " degrees")
-    info_win.refresh
-  end
-
-  def self.updateVisMag
-    info_win = App::INFO_WIN
-    info_win.setpos(4,3)
-    info_win.clrtoeol
-    info_win.addstr(App::Settings.vis_mag.to_s) 
-    info_win.refresh
-  end
-
-  def self.updateLon
-    info_win = App::INFO_WIN
-    info_win.setpos(33,0)
-    info_win.clrtoeol
-    info_win.addstr(App::Settings.lon.to_s)
-    info_win.refresh
-  end
-
-  def self.updateLat
-    info_win = App::INFO_WIN
-    info_win.setpos(35,0)
-    info_win.clrtoeol
-    info_win.addstr(App::Settings.lat.to_s)
-    info_win.refresh
-  end
-
   def self.updateGeo
     # Help screen popup with command key list
     win = Curses.stdscr
@@ -362,7 +161,7 @@ class MyStarsWindows < MyStars
       geowin.setpos(3,2)
       App::Settings.lon = geowin.getstr.to_f
     end
-    MyStarsWindows.updateLon
+    App::INFO_WIN.updateLon
     geowin.setpos(4,2)
     geowin.addstr("Enter your latitude as decimal degrees, West is negative")
     geowin.setpos(5,2)
@@ -380,7 +179,7 @@ class MyStarsWindows < MyStars
       geowin.setpos(5,2)
       App::Settings.lat = geowin.getstr.to_f
     end
-    MyStarsWindows.updateLat
+    App::INFO_WIN.updateLat
     Curses.noecho
     Curses.curs_set(0)
     geowin.refresh
@@ -404,7 +203,7 @@ class MyStarsWindows < MyStars
       win.addstr("*")
       win.attrset(Curses::A_NORMAL)
       win.refresh
-      MyStarsWindows.updateTargetInfo
+      App::INFO_WIN.updateTargetInfo
     end 
   end
 
@@ -435,7 +234,7 @@ class MyStarsWindows < MyStars
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
     win.refresh
-    MyStarsWindows.updateTargetInfo
+    App::INFO_WIN.updateTargetInfo
   end
 
   def self.selectPrev
@@ -465,7 +264,7 @@ class MyStarsWindows < MyStars
     win.addstr("*")
     win.attrset(Curses::A_NORMAL)
     win.refresh
-    MyStarsWindows.updateTargetInfo
+    App::INFO_WIN.updateTargetInfo
   end
 
   def self.search

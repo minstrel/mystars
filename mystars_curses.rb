@@ -10,6 +10,8 @@ require_relative 'lib/mystars_constellation_label'
 require_relative 'lib/mystars_constellation_labels'
 require_relative 'lib/mystars_star'
 require_relative 'lib/mystars_stars'
+require_relative 'lib/mystars_window'
+require_relative 'lib/mystars_info_window'
 
 # Main queue to receive user requests as well as timers and other input.
 main_input = Queue.new
@@ -21,10 +23,10 @@ begin
   # Main display window
   App::WIN = Curses::Window.new(Curses.lines,Curses.cols - 18,0,18)
   # Info window
-  App::INFO_WIN = Curses::Window.new(Curses.lines,18,0,0)
+  App::INFO_WIN = MyStarsInfoWindow.new(Curses.lines,18,0,0)
   # Initialize main display window
   win = App::WIN
-  MyStarsWindows.drawInfo
+  App::INFO_WIN.drawInfo
   # Allow arrow key / keypad input
   win.keypad = true
   # Get the users lon and lat
@@ -45,7 +47,7 @@ begin
     win.setpos(win.maxy / 2 + 1, 5)
     App::Settings.lon = win.getstr.to_f
   end
-  MyStarsWindows.updateLon
+  App::INFO_WIN.updateLon
   win.setpos(win.maxy / 2 + 2, 5)
   win.addstr("Enter your latitude as decimal degrees, South is negative")
   win.setpos(win.maxy / 2 + 3, 5)
@@ -63,7 +65,7 @@ begin
     win.setpos(win.maxy / 2 + 3, 5)
     App::Settings.lat = win.getstr.to_f
   end
-  MyStarsWindows.updateLat
+  App::INFO_WIN.updateLat
   # Don't echo input
   Curses.noecho
   # No cursor
@@ -125,7 +127,7 @@ begin
       MyStarsWindows.selectID
       # If we're updating the geospacial date, time has likely changed too,
       # so update that
-      MyStarsWindows.updateTime(geo) 
+      App::INFO_WIN.updateTime(geo) 
       ok_timer << "OK"
     when 'q'
       break
@@ -142,7 +144,7 @@ begin
         # There shouldn't be an else... 
       end
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateMag
+      App::INFO_WIN.updateMag
       MyStarsWindows.selectID
     when "-"
       # Minus sign, zooms out
@@ -157,7 +159,7 @@ begin
         # There shouldn't be an else here either...
       end
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateMag
+      App::INFO_WIN.updateMag
       MyStarsWindows.selectID
     when 9
       # Tab, cycle through objects
@@ -169,19 +171,19 @@ begin
       # Decrease magnitude filter (show more)
       App::Settings.vis_mag += 1
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateVisMag
+      App::INFO_WIN.updateVisMag
       MyStarsWindows.selectID
     when 'M'
       # Increase magnitude filter (show less)
       App::Settings.vis_mag -= 1
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateVisMag
+      App::INFO_WIN.updateVisMag
       MyStarsWindows.selectID
     when 'g'
       # Toggle ground visibility
       App::Settings.show_ground = !App::Settings.show_ground
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateGround
+      App::INFO_WIN.updateGround
       MyStarsWindows.selectID
     when 'G'
       # Update geographic location
@@ -192,7 +194,7 @@ begin
       # Toggle constellation visibility
       App::Settings.show_constellations = !App::Settings.show_constellations
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateConstellations
+      App::INFO_WIN.updateConstellations
       MyStarsWindows.selectID
     when 'H', '?'
       # Help screen
@@ -202,7 +204,7 @@ begin
       # Label visibility
       App::Settings.labels = App::LABELS.next
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateLabels
+      App::INFO_WIN.updateLabels
       MyStarsWindows.selectID
     when 's'
       # Search screen
@@ -210,22 +212,22 @@ begin
     when Curses::Key::LEFT
       MyStarsWindows.move(:left)
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateFacing
+      App::INFO_WIN.updateFacing
       MyStarsWindows.selectID
     when Curses::Key::RIGHT
       MyStarsWindows.move(:right)
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateFacing
+      App::INFO_WIN.updateFacing
       MyStarsWindows.selectID
     when Curses::Key::UP
       MyStarsWindows.move(:up)
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateFacing
+      App::INFO_WIN.updateFacing
       MyStarsWindows.selectID
     when Curses::Key::DOWN
       MyStarsWindows.move(:down)
       MyStarsWindows.drawWindow
-      MyStarsWindows.updateFacing
+      App::INFO_WIN.updateFacing
       MyStarsWindows.selectID
     end
   end

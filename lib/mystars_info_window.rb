@@ -9,7 +9,7 @@ require_relative 'mystars'
 require_relative 'mystars_window'
 
 class MyStarsInfoWindow < MyStarsWindow
-  def initialize
+  def initialize(lines, cols, starty, startx)
     super
   end
 
