@@ -1,5 +1,6 @@
 ## Changelog
 0.0.5
+* Various refactorings
 
 0.0.4
 * Current facing now displayed in info panel

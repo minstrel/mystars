@@ -1,8 +1,19 @@
 #!/usr/bin/ruby -w
 # encoding: utf-8
 
-require 'curses'
-require_relative 'mystars'
+require_relative 'lib/app'
+require_relative 'lib/mystars'
+require_relative 'lib/mystars_geo'
+require_relative 'lib/mystars_constellation_line'
+require_relative 'lib/mystars_constellation_lines'
+require_relative 'lib/mystars_constellation_label'
+require_relative 'lib/mystars_constellation_labels'
+require_relative 'lib/mystars_star'
+require_relative 'lib/mystars_stars'
+require_relative 'lib/mystars_window'
+require_relative 'lib/mystars_info_window'
+require_relative 'lib/mystars_view_window'
+require_relative 'lib/mystars_decoration'
 
 # Main queue to receive user requests as well as timers and other input.
 main_input = Queue.new
@@ -11,11 +22,13 @@ ok_timer = Queue.new
 
 Curses.init_screen
 begin
+  # Main display window
+  App::WIN = MyStarsViewWindow.new(Curses.lines,Curses.cols - 18,0,18)
+  # Info window
+  App::INFO_WIN = MyStarsInfoWindow.new(Curses.lines,18,0,0)
   # Initialize main display window
-  win = Curses::Window.new(Curses.lines,Curses.cols - 18,0,18)
-  # Initialize info window
-  info_win = Curses::Window.new(Curses.lines,18,0,0)
-  MyStarsWindows.drawInfo(info_win)
+  win = App::WIN.window
+  App::INFO_WIN.drawInfo
   # Allow arrow key / keypad input
   win.keypad = true
   # Get the users lon and lat
@@ -36,7 +49,7 @@ begin
     win.setpos(win.maxy / 2 + 1, 5)
     App::Settings.lon = win.getstr.to_f
   end
-  MyStarsWindows.updateLon(info_win)
+  App::INFO_WIN.updateLon
   win.setpos(win.maxy / 2 + 2, 5)
   win.addstr("Enter your latitude as decimal degrees, South is negative")
   win.setpos(win.maxy / 2 + 3, 5)
@@ -54,7 +67,7 @@ begin
     win.setpos(win.maxy / 2 + 3, 5)
     App::Settings.lat = win.getstr.to_f
   end
-  MyStarsWindows.updateLat(info_win)
+  App::INFO_WIN.updateLat
   # Don't echo input
   Curses.noecho
   # No cursor
@@ -94,11 +107,11 @@ begin
     end
   end
   # Create a new collection based on mag 6 and brighter
-  App::Settings.collection = MyStars.newstars('./data/mystars_6.json')
+  App::Settings.collection = MyStarsStars.new('./data/mystars_6.json')
   # Get constellation names
-  App::Settings.constellation_names = MyStars.newconstellations('./data/constellations.json')
+  App::Settings.constellation_names = MyStarsConstellationLabels.new('./data/constellations.json')
   # Get constellation lines
-  App::Settings.constellation_lines = MyStars.newconstellation_lines('./data/constellations.lines.json')
+  App::Settings.constellation_lines = MyStarsConstellationLines.new('./data/constellations.lines.json')
   # Main input loop
   while input = main_input.pop
     case input
@@ -108,15 +121,15 @@ begin
       # Add alt and azi data to the collection and add it to world matrix
       App::Settings.collection.localize(geo)
       # Add constellation names to the world matrix
-      App::Settings.constellation_names.each { |con| con.localize(geo) }
+      App::Settings.constellation_names.members.each { |con| con.localize(geo) }
       # Add constellation lines to the world martix
-      App::Settings.constellation_lines.each { |conline| conline.localize(geo) }
+      App::Settings.constellation_lines.members.each { |conline| conline.localize(geo) }
       # Draw a window centered around the input coords
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.drawWindow
+      App::WIN.selectID
       # If we're updating the geospacial date, time has likely changed too,
       # so update that
-      MyStarsWindows.updateTime(info_win,geo) 
+      App::INFO_WIN.updateTime(geo) 
       ok_timer << "OK"
     when 'q'
       break
@@ -127,96 +140,97 @@ begin
         # 1 degree max zoom in
       when 2..15
         App::Settings.mag -= 1
-      when 20..180
+      when 20..90
         App::Settings.mag -= 5
       else
         # There shouldn't be an else... 
       end
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateMag(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateMag
+      App::WIN.selectID
     when "-"
       # Minus sign, zooms out
       case App::Settings.mag
       when 1..14
         App::Settings.mag += 1
-      when 15..175
+      when 15..85
         App::Settings.mag += 5
-      when 180
-        # 180 degree max zoom out
+      when 90
+        # 90 degree max zoom out
       else
         # There shouldn't be an else here either...
       end
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateMag(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateMag
+      App::WIN.selectID
     when 9
       # Tab, cycle through objects
-      MyStarsWindows.selectNext(win, info_win)
+      App::WIN.selectNext
     when Curses::Key::BTAB
       # Shift-Tab, cycle through objects
-      MyStarsWindows.selectPrev(win, info_win)
+      App::WIN.selectPrev
     when 'm'
       # Decrease magnitude filter (show more)
       App::Settings.vis_mag += 1
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateVisMag(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateVisMag
+      App::WIN.selectID
     when 'M'
       # Increase magnitude filter (show less)
       App::Settings.vis_mag -= 1
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateVisMag(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateVisMag
+      App::WIN.selectID
     when 'g'
       # Toggle ground visibility
       App::Settings.show_ground = !App::Settings.show_ground
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateGround(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateGround
+      App::WIN.selectID
     when 'G'
       # Update geographic location
-      MyStarsWindows.updateGeo(info_win)
+      MyStarsWindow.updateGeo
       main_input << "update"
       user_input.wakeup
     when 'c'
+      # Toggle constellation visibility
       App::Settings.show_constellations = !App::Settings.show_constellations
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateConstellations(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateConstellations
+      App::WIN.selectID
     when 'H', '?'
       # Help screen
-      MyStarsWindows.help
+      MyStarsWindow.help
       user_input.wakeup
     when 'L'
       # Label visibility
       App::Settings.labels = App::LABELS.next
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateLabels(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateLabels
+      App::WIN.selectID
     when 's'
       # Search screen
-      MyStarsWindows.search
+      MyStarsWindow.search
     when Curses::Key::LEFT
-      MyStarsWindows.move(:left)
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateFacing(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.move(:left)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateFacing
+      App::WIN.selectID
     when Curses::Key::RIGHT
-      MyStarsWindows.move(:right)
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateFacing(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.move(:right)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateFacing
+      App::WIN.selectID
     when Curses::Key::UP
-      MyStarsWindows.move(:up)
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateFacing(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.move(:up)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateFacing
+      App::WIN.selectID
     when Curses::Key::DOWN
-      MyStarsWindows.move(:down)
-      MyStarsWindows.drawWindow(win)
-      MyStarsWindows.updateFacing(info_win)
-      MyStarsWindows.selectID(win, info_win)
+      App::WIN.move(:down)
+      App::WIN.drawWindow
+      App::INFO_WIN.updateFacing
+      App::WIN.selectID
     end
   end
 ensure
