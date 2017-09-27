@@ -16,7 +16,7 @@ class MyStarsInfoWindow < MyStarsWindow
   def drawInfo
     # Initial drawing of info window
     @window.setpos(1,0)
-    @window.addstr("Field of View N/S:")
+    @window.addstr("Field of View alt:")
     @window.setpos(2,0)
     @window.addstr(App::Settings.mag.to_s + " degrees")
     @window.setpos(3,0)

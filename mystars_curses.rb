@@ -13,6 +13,7 @@ require_relative 'lib/mystars_stars'
 require_relative 'lib/mystars_window'
 require_relative 'lib/mystars_info_window'
 require_relative 'lib/mystars_view_window'
+require_relative 'lib/mystars_decoration'
 
 # Main queue to receive user requests as well as timers and other input.
 main_input = Queue.new
