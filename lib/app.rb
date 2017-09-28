@@ -9,10 +9,10 @@ module App
   # it sometime)
   # mag - field of view in degrees N-S
   # vis_mag - dimmest magnitude visible
-  # collection - MyStarsStars collection in current database
+  # collection - MyStarsFixedObjects collection in current database
   # lat - user latitude
   # lon - user longitude
-  # in_view - MyStarsStars collection in current viewscreen
+  # in_view - MyStarsFixedObjects collection in current viewscreen
   # timer - delay, in seconds, before timer thread attempts to request a
   #   refresh of both collection and in_view
   # selected_id star.id # of the currently selected star.  When we clean up

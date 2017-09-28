@@ -44,7 +44,7 @@ class MyStarsViewWindow < MyStarsWindow
     App::Settings.constellation_lines.draw(pv)
 
     # Clear in-view stars
-    App::Settings.in_view = MyStarsStars.new
+    App::Settings.in_view = MyStarsFixedObjects.new
 
     # Draw in-view stars
     App::Settings.collection.draw(pv)

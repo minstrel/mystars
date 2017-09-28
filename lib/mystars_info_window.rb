@@ -154,7 +154,9 @@ class MyStarsInfoWindow < MyStarsWindow
   def updateTargetInfo
     star = App::Settings.in_view.members[App::Settings.in_view.selected]
     name = star.name.to_s
-    desig = star.desig.to_s + " " + star.con
+    if star.class == MyStarsStar
+      desig = star.desig.to_s + " " + star.con
+    end
     radec = star.ra.round(2).to_s + + " / " + star.dec.round(2).to_s
     altaz = star.alt.round(2).to_s + " / " + star.az.round(2).to_s
     @window.setpos(16,0)
@@ -162,7 +164,9 @@ class MyStarsInfoWindow < MyStarsWindow
     @window.addstr(name)
     @window.setpos(18,0)
     @window.clrtoeol
-    @window.addstr(desig)
+    if star.class == MyStarsStar
+      @window.addstr(desig)
+    end
     @window.setpos(20,0)
     @window.clrtoeol
     @window.addstr(radec)

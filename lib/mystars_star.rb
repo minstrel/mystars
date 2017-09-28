@@ -36,9 +36,7 @@ class MyStarsStar < MyStars
     # Don't draw if it's outside current screen
     return nil if !(@cart_proj[0,0].between?(-1,1) && @cart_proj[1,0].between?(-1,1) && @cart_proj[2,0].between?(0,1))
     # If ground is showing, don't show if it's below the horizon
-    if App::Settings.show_ground
-      return nil if @alt < 0.0
-    end
+    return nil if (App::Settings.show_ground && (@alt < 0.0))
     # The view window
     win = App::WIN.window
     # Add it to in view collection for tabbing purposes

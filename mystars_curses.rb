@@ -9,11 +9,12 @@ require_relative 'lib/mystars_constellation_lines'
 require_relative 'lib/mystars_constellation_label'
 require_relative 'lib/mystars_constellation_labels'
 require_relative 'lib/mystars_star'
-require_relative 'lib/mystars_stars'
+require_relative 'lib/mystars_fixed_objects'
 require_relative 'lib/mystars_window'
 require_relative 'lib/mystars_info_window'
 require_relative 'lib/mystars_view_window'
 require_relative 'lib/mystars_decoration'
+require_relative 'lib/mystars_dso'
 
 # Main queue to receive user requests as well as timers and other input.
 main_input = Queue.new
@@ -107,7 +108,9 @@ begin
     end
   end
   # Create a new collection based on mag 6 and brighter
-  App::Settings.collection = MyStarsStars.new('./data/mystars_6.json')
+  App::Settings.collection = MyStarsFixedObjects.new('./data/mystars_6.json', :stars)
+  # Add the DSO file
+  App::Settings.collection.members += MyStarsFixedObjects.new('./data/dsos_6.json', :dsos).members
   # Get constellation names
   App::Settings.constellation_names = MyStarsConstellationLabels.new('./data/constellations.json')
   # Get constellation lines
