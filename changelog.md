@@ -1,6 +1,7 @@
 ## Changelog
 0.0.5
 * Various refactorings
+* Added DSOs down to mag 6
 
 0.0.4
 * Current facing now displayed in info panel
