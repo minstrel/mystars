@@ -27,4 +27,49 @@ class MyStarsStar < MyStars
     cx = Math.cos(@alt.to_rad) * Math.cos(@az.to_rad)
     @cart_world = Matrix.column_vector([cx,cy,cz,1])
   end
+
+  def draw(pv)
+    # Don't draw if it's below visible threshold
+    return nil if @mag > App::Settings.vis_mag
+    # Project into the world
+    @cart_proj = pv * @cart_world
+    # Don't draw if it's outside current screen
+    return nil if !(@cart_proj[0,0].between?(-1,1) && @cart_proj[1,0].between?(-1,1) && @cart_proj[2,0].between?(0,1))
+    # If ground is showing, don't show if it's below the horizon
+    if App::Settings.show_ground
+      return nil if @alt < 0.0
+    end
+    # The view window
+    win = App::WIN.window
+    # Add it to in view collection for tabbing purposes
+    App::Settings.in_view.members << self
+    # Draw star and label
+    xpos, ypos = self.screen_coords(win)
+    win.setpos(ypos,xpos)
+    win.addstr("*")
+    win.setpos(ypos+1,xpos)
+    # TODO The fix to correct text wrapping needs some tweaking
+    case App::Settings.labels
+    when :named
+      if !@name.empty?
+        if (xpos + (@name).length) > win.maxx
+        win.setpos(ypos+1, win.maxx - @name.length)
+        end
+        win.addstr(@name)
+      end
+    when :all
+      if !@name.empty?
+        if (xpos + (@name).length) > win.maxx
+          win.setpos(ypos+1, win.maxx - @name.length)
+        end
+        win.addstr(@name)
+      else
+        if (xpos + (@desig + " " + @con).length) > win.maxx
+          win.setpos(ypos+1, win.maxx - (@desig + "  " + @con).length)
+        end
+        win.addstr(@desig + " " + @con)
+      end
+    when :none
+    end
+  end
 end

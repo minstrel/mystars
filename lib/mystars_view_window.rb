@@ -43,8 +43,18 @@ class MyStarsViewWindow < MyStarsWindow
     # Draw in-view constellation lines
     App::Settings.constellation_lines.draw(pv)
 
+    # Clear in-view stars
+    App::Settings.in_view = MyStarsStars.new
+
     # Draw in-view stars
     App::Settings.collection.draw(pv)
+
+    # Sort the in-view members by screen position
+    App::Settings.in_view.members.sort! do |a, b|
+      (a.cart_proj[1,0] + 1.0) * 1000 - (a.cart_proj[0,0] + 1.0) <=> (b.cart_proj[1,0] + 1.0) * 1000 - (b.cart_proj[0,0] + 1.0)
+    end
+    # TODO Sort it better instead of doing this.
+    App::Settings.in_view.members.reverse!
 
     # Draw in-view constellations
     App::Settings.constellation_names.draw(pv)
