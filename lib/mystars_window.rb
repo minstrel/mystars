@@ -71,15 +71,30 @@ class MyStarsWindow < MyStars
   end
 
   def self.search
-    # Deactivate this for now
-    # win = Curses.stdscr
-    # searchwin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
-    # searchwin.box("|","-")
-    # searchwin.refresh
-    # sleep(5)
-    # searchwin.clear
-    # searchwin.refresh
-    # searchwin.close
+    win = Curses.stdscr
+    searchwin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
+    searchwin.box("|","-")
+    searchwin.setpos(2,2)
+    searchwin.addstr("Enter a name to search for")
+    searchwin.setpos(3,2)
+    Curses.echo
+    Curses.curs_set(1)
+    searchname = searchwin.getstr
+    searchwin.setpos(4,2)
+    # TODO limit search results, enable selection and goto
+    matches = App::Settings.collection.members.select { |o| o.name.downcase =~ /#{searchname.downcase}/ }
+    matches.each do |m|
+      searchwin.setpos(searchwin.cury+1,2)
+      searchwin.addstr(m.name)
+    end
+    #searchwin.addstr(matches.collect { |m| m.name }.join"\n")
+    Curses.noecho
+    Curses.curs_set(0)
+    searchwin.refresh
+    searchwin.getch
+    searchwin.clear
+    searchwin.refresh
+    searchwin.close
   end
 
   def self.help

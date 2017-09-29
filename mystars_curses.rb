@@ -87,6 +87,9 @@ begin
       elsif from_user == 'G'
         main_input << from_user
         Thread.stop
+      elsif (from_user == 's') || (from_user == '/')
+        main_input << from_user
+        Thread.stop
       else
       main_input << from_user
       end
@@ -211,9 +214,10 @@ begin
       App::WIN.drawWindow
       App::INFO_WIN.updateLabels
       App::WIN.selectID
-    when 's'
+    when 's', "/"
       # Search screen
       MyStarsWindow.search
+      user_input.wakeup
     when Curses::Key::LEFT
       App::WIN.move(:left)
       App::WIN.drawWindow
