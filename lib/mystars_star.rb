@@ -44,7 +44,7 @@ class MyStarsStar < MyStars
     # Draw star and label
     xpos, ypos = self.screen_coords(win)
     win.setpos(ypos,xpos)
-    win.addstr("*")
+    win.addstr(self.symbol)
     win.setpos(ypos+1,xpos)
     # TODO The fix to correct text wrapping needs some tweaking
     case App::Settings.labels
@@ -68,6 +68,18 @@ class MyStarsStar < MyStars
         win.addstr(@desig + " " + @con)
       end
     when :none
+    end
+  end
+
+  def symbol
+    if @mag <= 0.0
+      "✹"
+    elsif @mag <= 2.0
+      "✷"
+    elsif @mag <= 4.0
+      "✶"
+    else
+      "•"
     end
   end
 end

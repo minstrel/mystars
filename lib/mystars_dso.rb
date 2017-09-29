@@ -46,7 +46,7 @@ class MyStarsDSO < MyStars
     xpos, ypos = self.screen_coords(win)
     win.setpos(ypos,xpos)
     # TODO assign symbol per type
-    win.addstr("*")
+    win.addstr(self.symbol)
     win.setpos(ypos+1,xpos)
     # TODO The fix to correct text wrapping needs some tweaking
     case App::Settings.labels
@@ -58,6 +58,64 @@ class MyStarsDSO < MyStars
         win.addstr(@name)
       end
     when :none
+    end
+  end
+
+  def symbol
+    case @type
+    when "s"
+      "@"
+    when "oc"
+      "◌"
+    when "dn"
+      "⚈"
+    when "gc"
+      "○"
+    when "en"
+      "⁜"
+    when "gg"
+      "⁙"
+    when "snr"
+      "※"
+    when "rn"
+      "⚆"
+    when "sfr"
+      "⁂"
+    when "bn"
+      "⚙"
+    when "i"
+      "∼"
+    else
+      "*"
+    end
+  end
+
+  def type_long
+    case @type
+    when "s"
+      "Spiral galaxy"
+    when "oc"
+      "Open cluster"
+    when "dn"
+      "Dark nebula"
+    when "gc"
+      "Globular cluster"
+    when "en"
+      "Emission nebula" 
+    when "gg"
+      "Galaxy cluster"
+    when "snr"
+      "Supernova remnant"
+    when "rn"
+      "Reflection nebula"
+    when "sfr"
+      "Star forming region"
+    when "bn"
+      "Bright nebula"
+    when "i"
+      "Irregular galaxy"
+    else
+      "Unknown type"
     end
   end
 end

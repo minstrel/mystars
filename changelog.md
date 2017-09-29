@@ -2,6 +2,7 @@
 0.0.5
 * Various refactorings
 * Added DSOs down to mag 6
+* Stars and DSOs now drawn with symbol, indicating type for DSO and rough magnitude for stars
 
 0.0.4
 * Current facing now displayed in info panel

@@ -110,7 +110,7 @@ class MyStarsViewWindow < MyStarsWindow
       xpos, ypos = star.screen_coords(@window)
       @window.setpos(ypos,xpos)
       @window.attrset(Curses::A_REVERSE)
-      @window.addstr("*")
+      @window.addstr(star.symbol)
       @window.attrset(Curses::A_NORMAL)
       @window.refresh
       App::INFO_WIN.updateTargetInfo
@@ -127,7 +127,7 @@ class MyStarsViewWindow < MyStarsWindow
     xpos, ypos = star.screen_coords(@window)
     @window.setpos(ypos,xpos)
     @window.attrset(Curses::A_NORMAL)
-    @window.addstr("*")
+    @window.addstr(star.symbol)
     # ---
     if App::Settings.in_view.selected == App::Settings.in_view.members.length - 1
       App::Settings.in_view.selected = 0
@@ -140,7 +140,7 @@ class MyStarsViewWindow < MyStarsWindow
     xpos, ypos = star.screen_coords(@window)
     @window.setpos(ypos,xpos)
     @window.attrset(Curses::A_REVERSE)
-    @window.addstr("*")
+    @window.addstr(star.symbol)
     @window.attrset(Curses::A_NORMAL)
     @window.refresh
     App::INFO_WIN.updateTargetInfo
@@ -156,7 +156,7 @@ class MyStarsViewWindow < MyStarsWindow
     xpos, ypos = star.screen_coords(@window)
     @window.setpos(ypos,xpos)
     @window.attrset(Curses::A_NORMAL)
-    @window.addstr("*")
+    @window.addstr(star.symbol)
     # ---
     if (App::Settings.in_view.selected == 0) || (App::Settings.in_view.selected == -1)
       App::Settings.in_view.selected = App::Settings.in_view.members.length - 1
@@ -169,7 +169,7 @@ class MyStarsViewWindow < MyStarsWindow
     xpos, ypos = star.screen_coords(@window)
     @window.setpos(ypos,xpos)
     @window.attrset(Curses::A_REVERSE)
-    @window.addstr("*")
+    @window.addstr(star.symbol)
     @window.attrset(Curses::A_NORMAL)
     @window.refresh
     App::INFO_WIN.updateTargetInfo
