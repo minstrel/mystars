@@ -80,18 +80,26 @@ class MyStarsWindow < MyStars
     Curses.echo
     Curses.curs_set(1)
     searchname = searchwin.getstr
-    searchwin.setpos(4,2)
+    searchwin.setpos(5,2)
+    searchwin.addstr("Showing first 10 results, type number to go to result")
+    searchwin.setpos(6,2)
+    searchwin.addstr("Any other key to exit")
+    searchwin.setpos(7,2)
     # TODO limit search results, enable selection and goto
-    matches = App::Settings.collection.members.select { |o| o.name.downcase =~ /#{searchname.downcase}/ }
-    matches.each do |m|
+    matches = App::Settings.collection.members.select { |o| o.name.downcase.delete(" ") =~ /#{searchname.downcase.delete("  ")}/ }
+    if matches.length == 0
       searchwin.setpos(searchwin.cury+1,2)
-      searchwin.addstr(m.name)
+      searchwin.addstr("No results found, any key to exit")
+    else
+      matches[(0..10)].each.with_index do |m, i|
+        searchwin.setpos(searchwin.cury+1,2)
+        searchwin.addstr("(#{i.to_s})" + " - " + m.name)
+      end
     end
-    #searchwin.addstr(matches.collect { |m| m.name }.join"\n")
     Curses.noecho
     Curses.curs_set(0)
     searchwin.refresh
-    searchwin.getch
+    goto = searchwin.getch
     searchwin.clear
     searchwin.refresh
     searchwin.close
