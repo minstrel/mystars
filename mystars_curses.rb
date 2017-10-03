@@ -217,6 +217,8 @@ begin
     when 's', "/"
       # Search screen
       MyStarsWindow.search
+      App::INFO_WIN.updateFacing
+      main_input << "update"
       user_input.wakeup
     when Curses::Key::LEFT
       App::WIN.move(:left)

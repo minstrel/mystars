@@ -100,6 +100,15 @@ class MyStarsWindow < MyStars
     Curses.curs_set(0)
     searchwin.refresh
     goto = searchwin.getch
+    if !(goto =~ /\d/) # If -not- a digit
+      nil
+    else
+      App::Settings.facing_y = -(matches[goto.to_i].alt).round
+      App::Settings.facing_xz = 90 - matches[goto.to_i].az.round
+      if App::Settings.facing_xz < 0
+        App::Settings.facing_xz += 360
+      end
+    end
     searchwin.clear
     searchwin.refresh
     searchwin.close

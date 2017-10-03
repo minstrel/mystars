@@ -3,6 +3,7 @@
 * Various refactorings
 * Added DSOs down to mag 6
 * Stars and DSOs now drawn with symbol, indicating type for DSO and rough magnitude for stars
+* Very simple search added, just searches names and moves to that location.  I don't want to go too nuts with this right now because I expect the dataset to change eventually and I don't want to rework search if the data structure changes.
 
 0.0.4
 * Current facing now displayed in info panel
