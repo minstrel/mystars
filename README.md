@@ -60,3 +60,4 @@ Some very basic features are now present.  A small and not comprehensive list of
 ### Data Sources:
 
 1. mystars\_6.json, dsos\_6.json, constellations.json, constellations.lines.json - From D3 Celestial by Olaf Frohn, https://github.com/ofrohn/d3-celestial, BSD License.
+2. timezone\_boundaries.json - From Timezone Boundary Builder by Evan Siroky, https://github.com/evansiroky/timezone-boundary-builder
