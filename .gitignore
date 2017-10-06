@@ -2,4 +2,4 @@ test.rb
 testmaths.rb
 to_do
 *.swp
-data/timezone_boundaries.json
+/data/timezone_boundaries.json
