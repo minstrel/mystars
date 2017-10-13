@@ -13,5 +13,7 @@
 * Check to see if the point is within the polygon like: p1.within?(poly)
 * The file timezone_boundaries.json in the data directory contains bounds for all the timezones.
 * Match the ['properties']['tzid'] value up to the time zone of the same name using TZInfo::Timezone.get like: TZInfo::Timezone.get("America/New_York")
-
+* All the above has been dumped to zimezones.yaml.  Read this in with:
+  data = YAML.load_stream(File.open('./timezones.yaml'))
+* Compare this to the lat / lon, fail to local time.
 Have a working prototype that seems to work, but it takes forever to load.  Think we might need to dump this to some sort of datasource and see if it can be imported faster.
