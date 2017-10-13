@@ -41,23 +41,21 @@ If you are using a square (16x16, for example) font, the screen may appear stret
 
 Hit q to exit.
 
-### Features to implement for 0.0.5+
+### Features to implement for 0.0.6+
 
 Some very basic features are now present.  A small and not comprehensive list of what I have in mind next includes:
 
 * Manual input of time, pause, fast forward/reverse.
 * Additional filters, and moving similar toggleable settings to a popup window.
-* ~~Search window.~~
 * Measurement tool.
 * Adding more stars and non-fixed objects (planets, comets, sun, moon, etc.).
-* Beginnings of a nicer "look", including colors and ~~displaying different icons for stars dependant on magnitude range.  Also separate icons for DSOs once those are in.~~
+* Beginnings of a nicer "look", including colors.
 * Smoother scrolling
 * Protocols to control Meade and nexStar mounts via serial interface.  This is highly dependant on my actually getting ahold of one to test.  This feels like it should be a "far flung future" feature, but I think I'd like to put it in sooner than later, because I have the feeling that if this application will ever be of use to anyone, it will be as a minimalist, quick and dirty, interface to control mounts that can be run from anywhere with a terminal. 
-* ~~Clean up code, break out classes / modules into files, DRY stuff up - I wanted to put this off till later but the main file is getting too big~~
 * Right ascension / declination and altitude / azimuth lines.
 * Separate magnitude filter for DSOs
 
 ### Data Sources:
 
 1. mystars\_6.json, dsos\_6.json, constellations.json, constellations.lines.json - From D3 Celestial by Olaf Frohn, https://github.com/ofrohn/d3-celestial, BSD License.
-2. timezone\_boundaries.json - From Timezone Boundary Builder by Evan Siroky, https://github.com/evansiroky/timezone-boundary-builder
+2. timezones.yaml - RGeo data created from Timezone Boundary Builder by Evan Siroky, https://github.com/evansiroky/timezone-boundary-builder
