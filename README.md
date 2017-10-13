@@ -41,7 +41,7 @@ If you are using a square (16x16, for example) font, the screen may appear stret
 
 Hit q to exit.
 
-### Features to implement for 0.0.6+
+### Features to implement for 0.0.7+
 
 Some very basic features are now present.  A small and not comprehensive list of what I have in mind next includes:
 
