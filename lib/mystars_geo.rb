@@ -1,6 +1,8 @@
 # encoding: utf-8
 
 require 'date'
+require 'timezone_finder'
+require 'tzinfo'
 require_relative 'helpers'
 require_relative 'mystars'
 

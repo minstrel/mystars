@@ -11,39 +11,50 @@ require_relative 'mystars_window'
 class MyStarsInfoWindow < MyStarsWindow
   def initialize(lines, cols, starty, startx)
     super
+    # Positions of various info blocks and how many rows to allot
+    # FOV (2 rows)
+    @pos_fov = 1
+    # Visible Magnitude (2 rows)
+    @pos_mag = 3
+    # Constellation toggle (2 rows)
+    @pos_con = 7
+    # Ground toggle (2 rows)
+    @pos_gnd = 9
+    # Object labels (2 rows)
+    @pos_lbl = 11
   end
 
   def drawInfo
     # Initial drawing of info window
-    @window.setpos(1,0)
+    @window.setpos(@pos_fov,0)
     @window.addstr("Field of View alt:")
-    @window.setpos(2,0)
+    @window.setpos(@pos_fov + 1,0)
     @window.addstr(App::Settings.mag.to_s + " degrees")
-    @window.setpos(3,0)
+    @window.setpos(@pos_mag,0)
     @window.addstr("Visible magnitude")
-    @window.setpos(4,0)
+    @window.setpos(@pos_mag + 1,0)
     @window.addstr("<= " + App::Settings.vis_mag.to_s)
-    @window.setpos(7,0)
+    @window.setpos(@pos_con,0)
     @window.addstr("Constellations:")
-    @window.setpos(8,0)
+    @window.setpos(@pos_con + 1,0)
     case App::Settings.show_constellations
     when true
       @window.addstr("Shown")
     when false
       @window.addstr("Hidden")
     end
-    @window.setpos(9,0)
+    @window.setpos(@pos_gnd,0)
     @window.addstr("Ground:")
-    @window.setpos(10,0)
+    @window.setpos(@pos_gnd + 1,0)
     case App::Settings.show_ground
     when true
       @window.addstr("Shown")
     when false
       @window.addstr("Hidden")
     end
-    @window.setpos(11,0)
+    @window.setpos(@pos_lbl,0)
     @window.addstr("Labels:")
-    @window.setpos(12,0)
+    @window.setpos(@pos_lbl + 1,0)
     case App::Settings.labels
     when :all
       @window.addstr("All stars")
@@ -88,7 +99,7 @@ class MyStarsInfoWindow < MyStarsWindow
   end
 
   def updateConstellations
-    @window.setpos(8,0)
+    @window.setpos(@pos_con + 1,0)
     @window.clrtoeol
     case App::Settings.show_constellations
     when true
@@ -100,7 +111,7 @@ class MyStarsInfoWindow < MyStarsWindow
   end
 
   def updateGround
-    @window.setpos(10,0)
+    @window.setpos(@pos_gnd + 1,0)
     @window.clrtoeol
     case App::Settings.show_ground
     when true
@@ -112,7 +123,7 @@ class MyStarsInfoWindow < MyStarsWindow
   end
 
   def updateLabels
-    @window.setpos(12,0)
+    @window.setpos(@pos_lbl + 1,0)
     @window.clrtoeol
     case App::Settings.labels
     when :all
@@ -177,14 +188,14 @@ class MyStarsInfoWindow < MyStarsWindow
   end
 
   def updateMag
-    @window.setpos(2,0)
+    @window.setpos(@pos_fov + 1,0)
     @window.clrtoeol
     @window.addstr(App::Settings.mag.to_s + " degrees")
     @window.refresh
   end
 
   def updateVisMag
-    @window.setpos(4,3)
+    @window.setpos(@pos_mag + 1,3)
     @window.clrtoeol
     @window.addstr(App::Settings.vis_mag.to_s) 
     @window.refresh
