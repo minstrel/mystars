@@ -12,17 +12,45 @@ class MyStarsInfoWindow < MyStarsWindow
   def initialize(lines, cols, starty, startx)
     super
     # Positions of various info blocks and how many rows to allot
-    # FOV (2 rows)
+    # Field of view (2 rows)
     @pos_fov = 1
     # Visible Magnitude (2 rows)
     @pos_mag = 3
+    # Current Object header (1 row)
+      @pos_chd = 6
+      # Current Object Name (2 rows)
+      @pos_cna = 7
+      # Current Object Designation (2 rows)
+      @pos_cde = 9
+      # Current Object RA/Dec (2 rows)
+      @pos_crd = 11
+      # Current Object Alt/Az (2 rows)
+      @pos_caa = 13
+    # Facing section header (1 row)
+      @pos_fhd = 16
+      # Facing az (1 row)
+      @pos_faz = 17
+      # Facing alt (1 row)
+      @pos_fal = 18
+    # Longitude (2 rows)
+      @pos_lon = 20
+      # Latitude (2 rows)
+      @pos_lat = 22
     # Constellation toggle (2 rows)
-    @pos_con = 7
-    # Ground toggle (2 rows)
-    @pos_gnd = 9
-    # Object labels (2 rows)
-    @pos_lbl = 11
+      @pos_con = 25
+      # Ground toggle (2 rows)
+      @pos_gnd = 27
+      # Object labels (2 rows)
+      @pos_lbl = 29
+    # Date (2 rows)
+      @pos_dat = 32
+      # Time (2 rows)
+      @pos_tim = 34
   end
+
+  # TODO
+  # To DRY things up, make a method that sets position, color and writes
+  # a string
 
   def drawInfo
     # Initial drawing of info window
@@ -63,37 +91,37 @@ class MyStarsInfoWindow < MyStarsWindow
     when :none
       @window.addstr("No star labels")
     end
-    @window.setpos(32,0)
+    @window.setpos(@pos_lon,0)
     @window.addstr("Longitude:")
-    @window.setpos(33,0)
+    @window.setpos(@pos_lon + 1,0)
     @window.addstr(App::Settings.lon.to_s)
-    @window.setpos(34,0)
+    @window.setpos(@pos_lat,0)
     @window.addstr("Latitude")
-    @window.setpos(35,0)
+    @window.setpos(@pos_lat + 1,0)
     @window.addstr(App::Settings.lat.to_s)
-    @window.setpos(14,0)
+    @window.setpos(@pos_chd,0)
     @window.addstr("Current Object")
-    @window.setpos(15,0)
+    @window.setpos(@pos_cna,0)
     @window.addstr("Name:")
-    @window.setpos(17,0)
+    @window.setpos(@pos_cde,0)
     @window.addstr("Designation:")
-    @window.setpos(19,0)
+    @window.setpos(@pos_crd,0)
     @window.addstr("RA / Dec:")
-    @window.setpos(21,0)
+    @window.setpos(@pos_caa,0)
     @window.addstr("Alt / Az:")
-    @window.setpos(38,0)
+    @window.setpos(@pos_fhd,0)
     @window.addstr("Facing")
-    @window.setpos(39,0)
+    @window.setpos(@pos_faz,0)
     azimuth = 90 - App::Settings.facing_xz
     if azimuth < 0
       azimuth = 360 + azimuth
     end
     @window.addstr("Azimuth: " + azimuth.to_s + " °")
-    @window.setpos(40,0)
+    @window.setpos(@pos_fal,0)
     @window.addstr("Altitude: " + (-App::Settings.facing_y).to_s + " °")
-    @window.setpos(41,0)
+    @window.setpos(@pos_dat,0)
     @window.addstr("Date")
-    @window.setpos(43,0)
+    @window.setpos(@pos_tim,0)
     @window.addstr("Time")
     @window.refresh
   end
@@ -137,14 +165,14 @@ class MyStarsInfoWindow < MyStarsWindow
   end
 
   def updateFacing
-    @window.setpos(39,0)
+    @window.setpos(@pos_faz,0)
     @window.clrtoeol
     azimuth = 90 - App::Settings.facing_xz
     if azimuth < 0
       azimuth = 360 + azimuth
     end
     @window.addstr("Azimuth: " + azimuth.to_s + " °")
-    @window.setpos(40,0)
+    @window.setpos(@pos_fal,0)
     @window.clrtoeol
     @window.addstr("Altitude: " + (-App::Settings.facing_y).to_s + " °")
     @window.refresh
@@ -153,10 +181,10 @@ class MyStarsInfoWindow < MyStarsWindow
   end
 
   def updateTime(geo)
-    @window.setpos(42,0)
+    @window.setpos(@pos_dat + 1,0)
     @window.clrtoeol
     @window.addstr(geo.time.strftime("%Y-%m-%d"))
-    @window.setpos(44,0)
+    @window.setpos(@pos_tim + 1,0)
     @window.clrtoeol
     @window.addstr(geo.time.strftime("%H:%M:%S"))
     @window.refresh
@@ -170,18 +198,18 @@ class MyStarsInfoWindow < MyStarsWindow
     end
     radec = star.ra.round(2).to_s + + " / " + star.dec.round(2).to_s
     altaz = star.alt.round(2).to_s + " / " + star.az.round(2).to_s
-    @window.setpos(16,0)
+    @window.setpos(@pos_cna + 1,0)
     @window.clrtoeol
     @window.addstr(name)
-    @window.setpos(18,0)
+    @window.setpos(@pos_cde + 1,0)
     @window.clrtoeol
     if star.class == MyStarsStar
       @window.addstr(desig)
     end
-    @window.setpos(20,0)
+    @window.setpos(@pos_crd + 1,0)
     @window.clrtoeol
     @window.addstr(radec)
-    @window.setpos(22,0)
+    @window.setpos(@pos_caa + 1,0)
     @window.clrtoeol
     @window.addstr(altaz)
     @window.refresh
@@ -202,14 +230,14 @@ class MyStarsInfoWindow < MyStarsWindow
   end
   
   def updateLon
-    @window.setpos(33,0)
+    @window.setpos(@pos_lon + 1,0)
     @window.clrtoeol
     @window.addstr(App::Settings.lon.to_s)
     @window.refresh
   end
   
   def updateLat
-    @window.setpos(35,0)
+    @window.setpos(@pos_lat + 1,0)
     @window.clrtoeol
     @window.addstr(App::Settings.lat.to_s)
     @window.refresh

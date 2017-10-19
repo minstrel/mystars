@@ -23,6 +23,8 @@ ok_timer = Queue.new
 
 Curses.init_screen
 begin
+  Curses.start_color
+  require_relative 'lib/colors'
   # Main display window
   App::WIN = MyStarsViewWindow.new(Curses.lines,Curses.cols - 18,0,18)
   # Info window
