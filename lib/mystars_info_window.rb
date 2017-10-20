@@ -12,181 +12,175 @@ class MyStarsInfoWindow < MyStarsWindow
   def initialize(lines, cols, starty, startx)
     super
     # Positions of various info blocks and how many rows to allot
-    # Field of view (2 rows)
-    @pos_fov = 1
-    # Visible Magnitude (2 rows)
-    @pos_mag = 3
     # Current Object header (1 row)
-      @pos_chd = 6
+      @pos_chd = 1
       # Current Object Name (2 rows)
-      @pos_cna = 7
+      @pos_cna = 2
       # Current Object Designation (2 rows)
-      @pos_cde = 9
+      @pos_cde = 4
       # Current Object RA/Dec (2 rows)
-      @pos_crd = 11
+      @pos_crd = 6
       # Current Object Alt/Az (2 rows)
-      @pos_caa = 13
+      @pos_caa = 8
     # Facing section header (1 row)
-      @pos_fhd = 16
+      @pos_fhd = 11
       # Facing az (1 row)
-      @pos_faz = 17
+      @pos_faz = 12
       # Facing alt (1 row)
-      @pos_fal = 18
-    # Longitude (2 rows)
-      @pos_lon = 20
-      # Latitude (2 rows)
-      @pos_lat = 22
-    # Constellation toggle (2 rows)
-      @pos_con = 25
+      @pos_fal = 13
+    # Visibility header (1 row)
+      @pos_vhd = 15
+      # Field of view (2 rows)
+      @pos_fov = 16
+      # Visible Magnitude (2 rows)
+      @pos_mag = 18
+    # Settings header (1 row)
+      @pos_shd = 21
+      # Constellation toggle (2 rows)
+      @pos_con = 22
       # Ground toggle (2 rows)
-      @pos_gnd = 27
+      @pos_gnd = 24
       # Object labels (2 rows)
-      @pos_lbl = 29
-    # Date (2 rows)
-      @pos_dat = 32
+      @pos_lbl = 26
+    # Location / Time header
+      @pos_lhd = 29
+      # Longitude (2 rows)
+      @pos_lon = 30
+      # Latitude (2 rows)
+      @pos_lat = 32
+      # Date (2 rows)
+      @pos_dat = 34
       # Time (2 rows)
-      @pos_tim = 34
+      @pos_tim = 36
+
+    # Colors
+      @header_color = 1
+      @label_color = 2
   end
 
-  # TODO
-  # To DRY things up, make a method that sets position, color and writes
-  # a string
+  # Private method to set position, clear to end of line, set color
+  # and write a string
+  # Might need to make another method later without clrtoeol.
+  private def draw(posy, posx, color, string)
+    @window.setpos(posy, posx)
+    @window.clrtoeol
+    @window.color_set(color)
+    @window.addstr(string)
+    @window.color_set(0)
+  end
 
   def drawInfo
     # Initial drawing of info window
-    @window.setpos(@pos_fov,0)
-    @window.addstr("Field of View alt:")
-    @window.setpos(@pos_fov + 1,0)
-    @window.addstr(App::Settings.mag.to_s + " degrees")
-    @window.setpos(@pos_mag,0)
-    @window.addstr("Visible magnitude")
-    @window.setpos(@pos_mag + 1,0)
-    @window.addstr("<= " + App::Settings.vis_mag.to_s)
-    @window.setpos(@pos_con,0)
-    @window.addstr("Constellations:")
-    @window.setpos(@pos_con + 1,0)
+    draw(@pos_lhd,0,@header_color,"Location / Time")
+    draw(@pos_shd,0,@header_color,"Settings")
+    draw(@pos_vhd,0,@header_color,"FOV / Visibility")
+    draw(@pos_fov,0,@label_color,"Field of View alt:")
+    draw(@pos_fov + 1,0,0,"  " + App::Settings.mag.to_s + " °")
+    draw(@pos_mag,0,@label_color,"Visible magnitude")
+    draw(@pos_mag + 1,0,0,"  <= " + App::Settings.vis_mag.to_s)
+    draw(@pos_con,0,@label_color,"Constellations:")
+    draw(@pos_con + 1,0,0,
     case App::Settings.show_constellations
     when true
-      @window.addstr("Shown")
+      "  Shown"
     when false
-      @window.addstr("Hidden")
+      "  Hidden"
     end
-    @window.setpos(@pos_gnd,0)
-    @window.addstr("Ground:")
-    @window.setpos(@pos_gnd + 1,0)
+        )
+    draw(@pos_gnd,0,@label_color,"Ground:")
+    draw(@pos_gnd + 1,0,0,
     case App::Settings.show_ground
     when true
-      @window.addstr("Shown")
+      "  Shown"
     when false
-      @window.addstr("Hidden")
+      "  Hidden"
     end
-    @window.setpos(@pos_lbl,0)
-    @window.addstr("Labels:")
-    @window.setpos(@pos_lbl + 1,0)
+        )
+    draw(@pos_lbl,0,@label_color,"Labels:")
+    draw(@pos_lbl + 1,0,0,
     case App::Settings.labels
     when :all
-      @window.addstr("All stars")
+      "  All stars"
     when :named
-      @window.addstr("Named stars only")
+      "  Named stars only"
     when :none
-      @window.addstr("No star labels")
+      "  No star labels"
     end
-    @window.setpos(@pos_lon,0)
-    @window.addstr("Longitude:")
-    @window.setpos(@pos_lon + 1,0)
-    @window.addstr(App::Settings.lon.to_s)
-    @window.setpos(@pos_lat,0)
-    @window.addstr("Latitude")
-    @window.setpos(@pos_lat + 1,0)
-    @window.addstr(App::Settings.lat.to_s)
-    @window.setpos(@pos_chd,0)
-    @window.addstr("Current Object")
-    @window.setpos(@pos_cna,0)
-    @window.addstr("Name:")
-    @window.setpos(@pos_cde,0)
-    @window.addstr("Designation:")
-    @window.setpos(@pos_crd,0)
-    @window.addstr("RA / Dec:")
-    @window.setpos(@pos_caa,0)
-    @window.addstr("Alt / Az:")
-    @window.setpos(@pos_fhd,0)
-    @window.addstr("Facing")
-    @window.setpos(@pos_faz,0)
+        )
+    draw(@pos_lon,0,@label_color,"Longitude:")
+    draw(@pos_lon + 1,0,0,"  " + App::Settings.lon.to_s)
+    draw(@pos_lat,0,@label_color,"Latitude:")
+    draw(@pos_lat + 1,0,0,"  " + App::Settings.lat.to_s)
+    draw(@pos_chd,0,@header_color,"Current Object")
+    draw(@pos_cna,0,@label_color,"Name:")
+    draw(@pos_cde,0,@label_color,"Designation:")
+    draw(@pos_crd,0,@label_color,"RA / Dec:")
+    draw(@pos_caa,0,@label_color,"Alt / Az:")
+    draw(@pos_fhd,0,@header_color,"Facing")
     azimuth = 90 - App::Settings.facing_xz
     if azimuth < 0
       azimuth = 360 + azimuth
     end
-    @window.addstr("Azimuth: " + azimuth.to_s + " °")
-    @window.setpos(@pos_fal,0)
-    @window.addstr("Altitude: " + (-App::Settings.facing_y).to_s + " °")
-    @window.setpos(@pos_dat,0)
-    @window.addstr("Date")
-    @window.setpos(@pos_tim,0)
-    @window.addstr("Time")
+    draw(@pos_faz,0,0,"  Azimuth: " + azimuth.to_s + " °")
+    draw(@pos_fal,0,0,"  Altitude: " + (-App::Settings.facing_y).to_s + " °")
+    draw(@pos_dat,0,@label_color,"Date")
+    draw(@pos_tim,0,@label_color,"Time")
     @window.refresh
   end
 
   def updateConstellations
-    @window.setpos(@pos_con + 1,0)
-    @window.clrtoeol
+    draw(@pos_con + 1,0,0,
     case App::Settings.show_constellations
     when true
-      @window.addstr("Shown")
+      "  Shown"
     when false
-      @window.addstr("Hidden")
+      "  Hidden"
     end
+        )
     @window.refresh
   end
 
   def updateGround
-    @window.setpos(@pos_gnd + 1,0)
-    @window.clrtoeol
+    draw(@pos_gnd + 1,0,0,
     case App::Settings.show_ground
     when true
-      @window.addstr("Shown")
+      "  Shown"
     when false
-      @window.addstr("Hidden")
+      "  Hidden"
     end
+        )
     @window.refresh
   end
 
   def updateLabels
-    @window.setpos(@pos_lbl + 1,0)
-    @window.clrtoeol
+    draw(@pos_lbl + 1,0,0,
     case App::Settings.labels
     when :all
-      @window.addstr("All stars")
+      "  All stars"
     when :named
-      @window.addstr("Named stars only")
+      "  Named stars only"
     when :none
-      @window.addstr("No star labels")
+      "  No star labels"
     end
+        )
     @window.refresh
   end
 
   def updateFacing
-    @window.setpos(@pos_faz,0)
-    @window.clrtoeol
     azimuth = 90 - App::Settings.facing_xz
     if azimuth < 0
       azimuth = 360 + azimuth
     end
-    @window.addstr("Azimuth: " + azimuth.to_s + " °")
-    @window.setpos(@pos_fal,0)
-    @window.clrtoeol
-    @window.addstr("Altitude: " + (-App::Settings.facing_y).to_s + " °")
+    draw(@pos_faz,0,0,"  Azimuth: " + azimuth.to_s + " °")
+    draw(@pos_fal,0,0,"  Altitude: " + (-App::Settings.facing_y).to_s + " °")
     @window.refresh
   # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
   # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
   end
 
   def updateTime(geo)
-    @window.setpos(@pos_dat + 1,0)
-    @window.clrtoeol
-    @window.addstr(geo.time.strftime("%Y-%m-%d"))
-    @window.setpos(@pos_tim + 1,0)
-    @window.clrtoeol
-    @window.addstr(geo.time.strftime("%H:%M:%S"))
+    draw(@pos_dat + 1,0,0,"  " + geo.time.strftime("%Y-%m-%d"))
+    draw(@pos_tim + 1,0,0,"  " + geo.time.strftime("%H:%M:%S"))
     @window.refresh
   end
 
@@ -198,48 +192,36 @@ class MyStarsInfoWindow < MyStarsWindow
     end
     radec = star.ra.round(2).to_s + + " / " + star.dec.round(2).to_s
     altaz = star.alt.round(2).to_s + " / " + star.az.round(2).to_s
-    @window.setpos(@pos_cna + 1,0)
-    @window.clrtoeol
-    @window.addstr(name)
-    @window.setpos(@pos_cde + 1,0)
-    @window.clrtoeol
+    draw(@pos_cna + 1,0,0,"  " + name)
+    draw(@pos_cde + 1,0,0,"  " + 
     if star.class == MyStarsStar
-      @window.addstr(desig)
+      desig
+    else
+      ""
     end
-    @window.setpos(@pos_crd + 1,0)
-    @window.clrtoeol
-    @window.addstr(radec)
-    @window.setpos(@pos_caa + 1,0)
-    @window.clrtoeol
-    @window.addstr(altaz)
+        )
+    draw(@pos_crd + 1,0,0,"  " + radec)
+    draw(@pos_caa + 1,0,0,"  " + altaz)
     @window.refresh
   end
 
   def updateMag
-    @window.setpos(@pos_fov + 1,0)
-    @window.clrtoeol
-    @window.addstr(App::Settings.mag.to_s + " degrees")
+    draw(@pos_fov + 1,0,0,"  " + App::Settings.mag.to_s + " °")
     @window.refresh
   end
 
   def updateVisMag
-    @window.setpos(@pos_mag + 1,3)
-    @window.clrtoeol
-    @window.addstr(App::Settings.vis_mag.to_s) 
+    draw(@pos_mag + 1,3,0,"  " + App::Settings.vis_mag.to_s) 
     @window.refresh
   end
   
   def updateLon
-    @window.setpos(@pos_lon + 1,0)
-    @window.clrtoeol
-    @window.addstr(App::Settings.lon.to_s)
+    draw(@pos_lon + 1,0,0,"  " + App::Settings.lon.to_s)
     @window.refresh
   end
   
   def updateLat
-    @window.setpos(@pos_lat + 1,0)
-    @window.clrtoeol
-    @window.addstr(App::Settings.lat.to_s)
+    draw(@pos_lat + 1,0,0,"  " + App::Settings.lat.to_s)
     @window.refresh
   end
 end
