@@ -50,7 +50,8 @@ class MyStarsInfoWindow < MyStarsWindow
       @pos_lat = 32
       # Date (2 rows)
       @pos_dat = 34
-      # Time (2 rows)
+      # Time (4 rows)
+      # TODO clean up how timezone displays, often spills over rows 
       @pos_tim = 36
 
     # Colors
@@ -121,8 +122,10 @@ class MyStarsInfoWindow < MyStarsWindow
     if azimuth < 0
       azimuth = 360 + azimuth
     end
-    draw(@pos_faz,0,0,"  Azimuth: " + azimuth.to_s + " °")
-    draw(@pos_fal,0,0,"  Altitude: " + (-App::Settings.facing_y).to_s + " °")
+    draw(@pos_faz,0,2,"Azimuth:  ")
+    draw(@pos_fal,0,2,"Altitude: ")
+    draw(@pos_faz,10,0,azimuth.to_s + " °")
+    draw(@pos_fal,10,0,(-App::Settings.facing_y).to_s + " °")
     draw(@pos_dat,0,@label_color,"Date")
     draw(@pos_tim,0,@label_color,"Time")
     @window.refresh
@@ -171,8 +174,8 @@ class MyStarsInfoWindow < MyStarsWindow
     if azimuth < 0
       azimuth = 360 + azimuth
     end
-    draw(@pos_faz,0,0,"  Azimuth: " + azimuth.to_s + " °")
-    draw(@pos_fal,0,0,"  Altitude: " + (-App::Settings.facing_y).to_s + " °")
+    draw(@pos_faz,10,0,azimuth.to_s + " °")
+    draw(@pos_fal,10,0,(-App::Settings.facing_y).to_s + " °")
     @window.refresh
   # facing_xz - how many degrees the camera will be rotated around the y-axis (south = 0)
   # facing_y - how many degrees the camera will be rotated around the x-axis (up = 90)
@@ -181,6 +184,7 @@ class MyStarsInfoWindow < MyStarsWindow
   def updateTime(geo)
     draw(@pos_dat + 1,0,0,"  " + geo.time.strftime("%Y-%m-%d"))
     draw(@pos_tim + 1,0,0,"  " + geo.time.strftime("%H:%M:%S"))
+    draw(@pos_tim + 2,0,0,"  " + App::Settings.timezone.to_s)
     @window.refresh
   end
 
@@ -211,7 +215,7 @@ class MyStarsInfoWindow < MyStarsWindow
   end
 
   def updateVisMag
-    draw(@pos_mag + 1,3,0,"  " + App::Settings.vis_mag.to_s) 
+    draw(@pos_mag + 1,4,0," " + App::Settings.vis_mag.to_s) 
     @window.refresh
   end
   

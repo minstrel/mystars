@@ -61,6 +61,8 @@ class MyStarsWindow < MyStars
       geowin.setpos(5,2)
       App::Settings.lat = geowin.getstr.to_f
     end
+    # Force the next update to update the time zone
+    App::Settings.timezone = nil
     App::INFO_WIN.updateLat
     Curses.noecho
     Curses.curs_set(0)

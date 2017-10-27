@@ -25,6 +25,24 @@ class MyStarsGeo < MyStars
     @lat = local_lat
     # Express local_lon as negative for west, positive for east
     @lon = local_lon
+    # Closest timezone to @lat and @lon, only update if timezone is nil
+    # (on initial load and after updating geo info)
+    if App::Settings.timezone == nil
+      tf = TimezoneFinder.create
+      tz = tf.timezone_at(lng: @lon, lat: @lat)
+      if tz == nil
+        (1..20).step(2) do |x|
+          tz = tf.closest_timezone_at(lng: @lon, lat: @lat, delta_degree: x)
+          break if tz != nil
+        end
+      end
+      # Fall back to EST if we can't find a proper zone
+      if tz == nil
+        tz = 'America/New_York'
+      end
+      @tz = TZInfo::Timezone.get(tz)
+      App::Settings.timezone = @tz
+    end
     # Current DateTime, either specified else now
     @time = if time then time else DateTime.now end
     # Julian Day, either specified (optional)
