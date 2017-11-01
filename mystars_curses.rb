@@ -89,6 +89,9 @@ begin
       elsif from_user == 'G'
         main_input << from_user
         Thread.stop
+      elsif from_user == 't'
+        main_input << from_user
+        Thread.stop
       elsif (from_user == 's') || (from_user == '/')
         main_input << from_user
         Thread.stop
@@ -220,6 +223,11 @@ begin
       # Search screen
       MyStarsWindow.search
       App::INFO_WIN.updateFacing
+      main_input << "update"
+      user_input.wakeup
+    when 't'
+      # Change the time
+      MyStarsWindow.updateTime
       main_input << "update"
       user_input.wakeup
     when Curses::Key::LEFT

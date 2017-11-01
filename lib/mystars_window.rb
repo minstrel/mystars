@@ -72,6 +72,15 @@ class MyStarsWindow < MyStars
     geowin.close
   end
 
+  def self.updateTime
+    # TODO finish method, accept user input time and use as new base time
+    win = Curses.stdscr
+    timewin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
+    timewin.box("|","-")
+    timewin.refresh
+    timewin.getch
+  end
+
   def self.search
     win = Curses.stdscr
     searchwin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
