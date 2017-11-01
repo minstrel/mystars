@@ -33,7 +33,7 @@ class MyStarsGeo < MyStars
       if tz == nil
         (1..20).step(2) do |x|
           tz = tf.closest_timezone_at(lng: @lon, lat: @lat, delta_degree: x)
-          break if tz != nil
+          break if tz
         end
       end
       # Fall back to EST if we can't find a proper zone
@@ -44,7 +44,7 @@ class MyStarsGeo < MyStars
       App::Settings.timezone = @tz
     end
     # Current DateTime, either specified else now
-    @time = if time then time else DateTime.now end
+    @time = if time then time else App::Settings.timezone.now.to_datetime end
     # Julian Day, either specified (optional)
     # else current Julian Day, fractional
     @jd = if time then time.ajd.to_f else @time.ajd.to_f end

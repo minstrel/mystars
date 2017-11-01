@@ -52,7 +52,6 @@ class MyStarsInfoWindow < MyStarsWindow
       @pos_dat = 34
       # Time (4 rows)
       # TODO clean up how timezone displays, often spills over rows 
-      # TODO display the time in the time zone at lon/lat
       @pos_tim = 36
 
     # Colors
