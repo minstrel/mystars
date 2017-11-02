@@ -19,6 +19,17 @@ class MyStarsWindow < MyStars
     @window = Curses::Window.new(lines, cols, starty, startx)
   end
 
+  # Draw method with specified window
+  def self.draw(win, posy, posx, color, string)
+    win.setpos(posy, posx)
+    win.clrtoeol
+    win.color_set(color)
+    win.addstr(string)
+    win.color_set(0)
+  end
+
+  private_class_method :draw
+
   def self.updateGeo
   # Help screen popup with command key list
     win = Curses.stdscr
@@ -76,9 +87,13 @@ class MyStarsWindow < MyStars
     # TODO finish method, accept user input time and use as new base time
     win = Curses.stdscr
     timewin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
+    draw(timewin,2,2,0,"Press (1) to set a new time, (2) to set a new date.")
+    draw(timewin,3,2,0,"Enter to confirm or Esc to abort")
     timewin.box("|","-")
     timewin.refresh
     timewin.getch
+    timewin.clear
+    timewin.close
   end
 
   def self.search
