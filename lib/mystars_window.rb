@@ -91,7 +91,36 @@ class MyStarsWindow < MyStars
     draw(timewin,3,2,0,"Enter to confirm or Esc to abort")
     timewin.box("|","-")
     timewin.refresh
-    timewin.getch
+    while input = timewin.getch
+      case input
+      when "1" # New Time
+        draw(timewin,5,2,0,"Enter new local time in 24-hour format")
+        draw(timewin,6,2,0,"HH-MM-SS")
+        draw(timewin,7,4,0,"-")
+        draw(timewin,7,7,0,"-")
+        timewin.box("|","-")
+        Curses.echo
+        Curses.curs_set(1)
+        timewin.setpos(7,2)
+        hh = timewin.getch + timewin.getch
+        timewin.setpos(7,5)
+        mm = timewin.getch + timewin.getch
+        timewin.setpos(7,8)
+        ss = timewin.getch + timewin.getch
+        Curses.noecho
+        Curses.curs_set(0)
+        draw(timewin,11,2,0,"New time to set:")
+        draw(timewin,12,2,0,hh + "-" + mm + "-" + ss)
+        draw(timewin,5,2,0,"")
+        draw(timewin,6,2,0,"")
+        draw(timewin,7,2,0,"")
+        timewin.box("|","-")
+      when "2" # New Date
+      when Curses::Key::ENTER # Enter / confirm
+      when 27 # Escape / abort
+        break
+      end
+    end
     timewin.clear
     timewin.close
   end
