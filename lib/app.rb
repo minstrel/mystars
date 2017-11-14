@@ -2,6 +2,7 @@
 
 require_relative 'stars3d'
 require_relative 'helpers'
+require 'date'
 
 module App
   # Running settings
@@ -46,7 +47,11 @@ module App
     :show_ground,
     # Possible settings for object labels
     # labels - :named, :all, :none - show only named star labels, all stars, or no labels
-    :labels
+    :labels,
+    # Local PC time at last update
+    :last_time,
+    # Manually input effective time
+    :manual_time
   )
   # This is slower than passing everything in to .new, but we're only doing
   # it once and it's more readable.
@@ -59,6 +64,7 @@ module App
   Settings.show_constellations = true
   Settings.show_ground = true
   Settings.labels = LABELS.next
+  Settings.last_time = DateTime.now
   COMPASSPOINTS = {"N" => Matrix.column_vector([1,0,0,1]), "S" => Matrix.column_vector([-1,0,0,1]), "E" => Matrix.column_vector([0,0,1,1]), "W" => Matrix.column_vector([0,0,-1,1])}
   GROUNDCOORDS = ((0..359).to_a + [0]).collect { |a| Matrix.column_vector([Math.cos(a.to_rad), 0, Math.sin(a.to_rad), 1]) }
 

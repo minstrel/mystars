@@ -20,9 +20,9 @@ class MyStarsWindow < MyStars
   end
 
   # Draw method with specified window
-  def self.draw(win, posy, posx, color, string)
+  def self.draw(win, posy, posx, color, string, clear = true)
     win.setpos(posy, posx)
-    win.clrtoeol
+    win.clrtoeol if clear
     win.color_set(color)
     win.addstr(string)
     win.color_set(0)
@@ -85,6 +85,7 @@ class MyStarsWindow < MyStars
 
   def self.updateTime
     # TODO finish method, accept user input time and use as new base time
+    # Get new date and/or time from user, set as effective datetime
     win = Curses.stdscr
     timewin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
     draw(timewin,2,2,0,"Press (1) to set a new time, (2) to set a new date.")
@@ -102,21 +103,43 @@ class MyStarsWindow < MyStars
         Curses.echo
         Curses.curs_set(1)
         timewin.setpos(7,2)
-        hh = timewin.getch + timewin.getch
+        hour = timewin.getch + timewin.getch
         timewin.setpos(7,5)
-        mm = timewin.getch + timewin.getch
+        min = timewin.getch + timewin.getch
         timewin.setpos(7,8)
-        ss = timewin.getch + timewin.getch
+        sec = timewin.getch + timewin.getch
         Curses.noecho
         Curses.curs_set(0)
-        draw(timewin,11,2,0,"New time to set:")
-        draw(timewin,12,2,0,hh + "-" + mm + "-" + ss)
+        draw(timewin,11,2,0,"New time to set:", false)
+        draw(timewin,12,2,0,hour + "-" + min + "-" + sec, false)
         draw(timewin,5,2,0,"")
         draw(timewin,6,2,0,"")
         draw(timewin,7,2,0,"")
         timewin.box("|","-")
       when "2" # New Date
+        draw(timewin,5,2,0,"Enter new date in YYYY-MM-DD format")
+        draw(timewin,6,2,0,"YYYY-MM-DD")
+        draw(timewin,7,6,0,"-")
+        draw(timewin,7,9,0,"-")
+        timewin.box("|","-")
+        Curses.echo
+        Curses.curs_set(1)
+        timewin.setpos(7,2)
+        year = timewin.getch + timewin.getch + timewin.getch + timewin.getch
+        timewin.setpos(7,7)
+        month = timewin.getch + timewin.getch
+        timewin.setpos(7,10)
+        day = timewin.getch + timewin.getch
+        Curses.noecho
+        Curses.curs_set(0)
+        draw(timewin,11,24,0,"New date to set:", false)
+        draw(timewin,12,24,0,year + "-" + month + "-" + day, false)
+        draw(timewin,5,2,0,"")
+        draw(timewin,6,2,0,"")
+        draw(timewin,7,2,0,"")
+        timewin.box("|","-")
       when Curses::Key::ENTER # Enter / confirm
+        App::Settings.manual_time = DateTime.new(year, month, day, hour, min, sec)
       when 27 # Escape / abort
         break
       end
