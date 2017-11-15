@@ -50,7 +50,14 @@ module App
     :labels,
     # Local PC time at last update
     :last_time,
-    # Manually input effective time
+    # Manually input effective time at given lat / lon
+    # This is going to be set as a Time object with offset 0, rather than the proper
+    # offset of the timezone for lon/lat, which doesn't seem right
+    # but when tzinfo performs .local_to_utc, it appears to only regard the date and
+    # time and not the offset, so it's the way to do this for now.
+    # Actually maybe we don't have to do that, I think I can get the offset from tzinfo
+    # see bookmarked page.
+    # TODO
     :manual_time
   )
   # This is slower than passing everything in to .new, but we're only doing

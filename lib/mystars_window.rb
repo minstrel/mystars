@@ -92,6 +92,9 @@ class MyStarsWindow < MyStars
     draw(timewin,3,2,0,"Enter to confirm or Esc to abort")
     timewin.box("|","-")
     timewin.refresh
+    # TODO set hour, min, sec and year, month, day to current values, so
+    # we can easily pass in new ones or use existing when we set
+    # App::Settings.manual_time 
     while input = timewin.getch
       case input
       when "1" # New Time
@@ -140,6 +143,8 @@ class MyStarsWindow < MyStars
         timewin.box("|","-")
       when Curses::Key::ENTER # Enter / confirm
         App::Settings.manual_time = DateTime.new(year, month, day, hour, min, sec)
+        # TODO Save this correctly if time was specified but not date, and take
+        # into account currently set manual date and time.
       when 27 # Escape / abort
         break
       end

@@ -44,7 +44,13 @@ class MyStarsGeo < MyStars
       App::Settings.timezone = @tz
     end
     # Current DateTime, either specified else now
-    @time = if time then time else App::Settings.timezone.now.to_datetime end
+    # @time = if time then time else App::Settings.timezone.now.to_datetime end
+    @time = if App::Settings.manual_time
+              # If a manual time is set, use the UTC time at that local time
+              # TODO
+              time
+            else App::Settings.timezone.now.to_datetime
+            end
     # Julian Day, either specified (optional)
     # else current Julian Day, fractional
     @jd = if time then time.ajd.to_f else @time.ajd.to_f end
