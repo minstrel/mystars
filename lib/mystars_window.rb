@@ -89,12 +89,25 @@ class MyStarsWindow < MyStars
     win = Curses.stdscr
     timewin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
     draw(timewin,2,2,0,"Press (1) to set a new time, (2) to set a new date.")
-    draw(timewin,3,2,0,"Enter to confirm or Esc to abort")
+    draw(timewin,3,2,0,"Enter to confirm or x to exit")
     timewin.box("|","-")
     timewin.refresh
-    # TODO set hour, min, sec and year, month, day to current values, so
-    # we can easily pass in new ones or use existing when we set
-    # App::Settings.manual_time 
+    if App::Settings.manual_time
+      hour = App::Settings.manual_time.hour
+      min = App::Settings.manual_time.min
+      sec = App::Settings.manual_time.sec
+      year = App::Settings.manual_time.year
+      month = App::Settings.manual_time.month
+      day = App::Settings.manual_time.day
+    else
+      now = Time.now
+      hour = now.hour
+      min = now.min
+      sec = now.sec
+      year = now.year
+      month = now.month
+      day = now.day 
+    end
     while input = timewin.getch
       case input
       when "1" # New Time
@@ -106,15 +119,16 @@ class MyStarsWindow < MyStars
         Curses.echo
         Curses.curs_set(1)
         timewin.setpos(7,2)
-        hour = timewin.getch + timewin.getch
+        # TODO put some checks for proper numeric input values here
+        hour = (timewin.getch + timewin.getch).to_i
         timewin.setpos(7,5)
-        min = timewin.getch + timewin.getch
+        min = (timewin.getch + timewin.getch).to_i
         timewin.setpos(7,8)
-        sec = timewin.getch + timewin.getch
+        sec = (timewin.getch + timewin.getch).to_i
         Curses.noecho
         Curses.curs_set(0)
         draw(timewin,11,2,0,"New time to set:", false)
-        draw(timewin,12,2,0,hour + "-" + min + "-" + sec, false)
+        draw(timewin,12,2,0,"#{hour}-#{min}-#{sec}", false)
         draw(timewin,5,2,0,"")
         draw(timewin,6,2,0,"")
         draw(timewin,7,2,0,"")
@@ -128,25 +142,30 @@ class MyStarsWindow < MyStars
         Curses.echo
         Curses.curs_set(1)
         timewin.setpos(7,2)
-        year = timewin.getch + timewin.getch + timewin.getch + timewin.getch
+        # TODO put some checks for proper numeric input values here
+        year = (timewin.getch + timewin.getch + timewin.getch + timewin.getch).to_i
         timewin.setpos(7,7)
-        month = timewin.getch + timewin.getch
+        month = (timewin.getch + timewin.getch).to_i
         timewin.setpos(7,10)
-        day = timewin.getch + timewin.getch
+        day = (timewin.getch + timewin.getch).to_i
         Curses.noecho
         Curses.curs_set(0)
         draw(timewin,11,24,0,"New date to set:", false)
-        draw(timewin,12,24,0,year + "-" + month + "-" + day, false)
+        draw(timewin,12,24,0,"#{year}-#{month}-#{day}", false)
         draw(timewin,5,2,0,"")
         draw(timewin,6,2,0,"")
         draw(timewin,7,2,0,"")
         timewin.box("|","-")
-      when Curses::Key::ENTER # Enter / confirm
-        App::Settings.manual_time = DateTime.new(year, month, day, hour, min, sec)
-        # TODO Save this correctly if time was specified but not date, and take
-        # into account currently set manual date and time.
+      when 10 # Enter / confirm
+        draw(timewin,15,2,0,"hi!")
+        period = App::Settings.timezone.period_for_local(Time.new(year,month,day,hour,min,sec))
+        offset = Rational( (period.utc_offset + period.std_offset) , 86400 )
+        App::Settings.manual_time = DateTime.new(year, month, day, hour, min, sec, offset)
+        draw(timewin,15,2,0,"Offset is #{offset}")
       when 27 # Escape / abort
         break
+      else
+        nil
       end
     end
     timewin.clear
@@ -168,7 +187,7 @@ class MyStarsWindow < MyStars
     searchwin.setpos(6,2)
     searchwin.addstr("Any other key to exit")
     searchwin.setpos(7,2)
-    # TODO limit search results, enable selection and goto
+    # Match names containing the searched string, case-insensitive
     matches = App::Settings.collection.members.select { |o| o.name.downcase.delete(" ") =~ /#{searchname.downcase.delete("  ")}/ }
     if matches.length == 0
       searchwin.setpos(searchwin.cury+1,2)
@@ -182,6 +201,7 @@ class MyStarsWindow < MyStars
     Curses.noecho
     Curses.curs_set(0)
     searchwin.refresh
+    # Goto the search number typed, TODO makes this a navigable menu
     goto = searchwin.getch
     if !(goto =~ /\d/) # If -not- a digit
       nil
