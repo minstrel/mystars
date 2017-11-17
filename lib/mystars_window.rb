@@ -157,11 +157,19 @@ class MyStarsWindow < MyStars
         draw(timewin,7,2,0,"")
         timewin.box("|","-")
       when 10 # Enter / confirm
-        draw(timewin,15,2,0,"hi!")
+        # Update manual time to the input time
         period = App::Settings.timezone.period_for_local(Time.new(year,month,day,hour,min,sec))
         offset = Rational( (period.utc_offset + period.std_offset) , 86400 )
         App::Settings.manual_time = DateTime.new(year, month, day, hour, min, sec, offset)
-        draw(timewin,15,2,0,"Offset is #{offset}")
+        # Update the last updated time to now, so ticks proceed normally from here
+        App::Settings.last_time = App::Settings.timezone.now.to_datetime
+        break
+        # TODO
+        # I think the below is fixed.  Need to test it out a bit and then delete these comments.
+        # Gotta figure out what's going on here.  When I create a manual time, the screen
+        # appears normal, except the info window time is displaying the local time
+        # minus the offset.  MyStarsGeo appears to be working as intended, so must be
+        # something here I think, maybe with how the offset is put in.
       when 27 # Escape / abort
         break
       else
