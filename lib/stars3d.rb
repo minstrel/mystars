@@ -3,7 +3,7 @@
 # Tools for projecting 3D objects onto the screen.
 # Also for line drawing and rasterizing.
 
-require 'matrix'
+#require 'matrix'
 
 module Stars3D
   def self.translate(x,y,z)

@@ -1,7 +1,7 @@
 # encoding: utf-8
 
-require 'json'
-require 'curses'
+#require 'json'
+#require 'curses'
 require_relative 'stars3d'
 require_relative 'helpers'
 require_relative 'mystars'

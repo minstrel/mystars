@@ -2,7 +2,7 @@
 
 require_relative 'stars3d'
 require_relative 'helpers'
-require 'date'
+#require 'date'
 
 module App
   # Running settings

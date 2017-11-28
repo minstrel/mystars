@@ -1,6 +1,8 @@
 #!/usr/bin/ruby -w
 # encoding: utf-8
 
+require 'rubygems'
+require 'bundler/setup'
 require_relative 'lib/app'
 require_relative 'lib/mystars'
 require_relative 'lib/mystars_geo'

@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-require 'date'
-require 'json'
-require 'curses'
+#require 'date'
+#require 'json'
+#require 'curses'
 require_relative 'stars3d'
 require_relative 'helpers'
 require_relative 'mystars'
