@@ -3,6 +3,10 @@
 
 require 'rubygems'
 require 'bundler/setup'
+Bundler.require(:default)
+require 'date'
+require 'json'
+require 'matrix'
 require_relative 'lib/app'
 require_relative 'lib/mystars'
 require_relative 'lib/mystars_geo'

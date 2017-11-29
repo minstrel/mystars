@@ -1,0 +1,19 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    curses (1.2.4)
+    thread_safe (0.3.6)
+    timezone_finder (1.5.7)
+    tzinfo (1.2.4)
+      thread_safe (~> 0.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  curses
+  timezone_finder
+  tzinfo (= 1.2.4)
+
+BUNDLED WITH
+   1.16.0

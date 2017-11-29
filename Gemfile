@@ -4,9 +4,9 @@ source "https://rubygems.org"
 
 git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 
-gem 'date'
+#gem 'date'
 gem 'curses'
-gem 'json'
+#gem 'json'
 gem 'timezone_finder'
-gem 'tzinfo'
-gem 'matrix'
+gem 'tzinfo', '1.2.4'
+#gem 'matrix'
