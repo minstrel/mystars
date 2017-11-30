@@ -52,7 +52,20 @@ class MyStarsGeo < MyStars
               App::Settings.manual_time = App::Settings.manual_time + (now - App::Settings.last_time)
               App::Settings.manual_time
             else
-              now 
+              # I think this is the only place I need to put the correct time with offset
+              # to correct the issue with time being incorrect.
+              # TZInfo gem currently (1.4.2) outputs timezone.now as the local time but with 0 offset
+              # So the below is necessary.  When that bug is fixed in a future gem, we can just go
+              # back to using App::Settings.timezone.now.to_datetime
+              year = now.year
+              month = now.month
+              day = now.day
+              hour = now.hour
+              min = now.min
+              sec = now.sec
+              period = App::Settings.timezone.period_for_local(Time.new(year,month,day,hour,min,sec))
+              offset = Rational( (period.utc_offset + period.std_offset) , 86400 )
+              DateTime.new(year, month, day, hour, min, sec, offset)
             end
     App::Settings.last_time = now
     # Julian Day, either specified (optional)

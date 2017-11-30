@@ -158,6 +158,9 @@ class MyStarsWindow < MyStars
         timewin.box("|","-")
       when 10 # Enter / confirm
         # Update manual time to the input time
+        # TZInfo gem currently (1.4.2) outputs timezone.now as the local time but with 0 offset
+        # So the below is necessary.  When that bug is fixed in a future gem, we can just go
+        # back to using App::Settings.timezone.now.to_datetime
         period = App::Settings.timezone.period_for_local(Time.new(year,month,day,hour,min,sec))
         offset = Rational( (period.utc_offset + period.std_offset) , 86400 )
         App::Settings.manual_time = DateTime.new(year, month, day, hour, min, sec, offset)
