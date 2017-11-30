@@ -45,7 +45,7 @@ Hit q to exit.
 
 Some very basic features are now present.  A small and not comprehensive list of what I have in mind next includes:
 
-* Manual input of time, pause, fast forward/reverse.
+* ~Manual input of time~, pause, fast forward/reverse.
 * Additional filters, and moving similar toggleable settings to a popup window.
 * Measurement tool.
 * Adding more stars and non-fixed objects (planets, comets, sun, moon, etc.).

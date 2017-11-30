@@ -1,4 +1,10 @@
 ## Changelog
+0.0.7
+* Manual time input
+
+0.0.6
+* I forgot to add 0.0.6 changes...
+
 0.0.5
 * Heavy refactoring
 * Added DSOs down to mag 6
