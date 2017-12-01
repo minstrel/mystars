@@ -236,6 +236,38 @@ begin
       MyStarsWindow.updateTime
       main_input << "update"
       user_input.wakeup
+    when '>'
+      if App::Settings.manual_time
+        App::Settings.manual_time += Rational( 10 , 86400 )
+      else
+        App::Settings.manual_time = DateTime.now + Rational( 10 , 86400 )
+      end
+      App::Settings.last_time = App::Settings.timezone.now.to_datetime
+      main_input << "update"
+    when '<'
+      if App::Settings.manual_time
+        App::Settings.manual_time -= Rational( 10 , 86400 )
+      else
+        App::Settings.manual_time = DateTime.now - Rational( 10 , 86400 )
+      end
+      App::Settings.last_time = App::Settings.timezone.now.to_datetime
+      main_input << "update"
+    when ']'
+      if App::Settings.manual_time
+        App::Settings.manual_time += Rational( 600 , 86400 )
+      else
+        App::Settings.manual_time = DateTime.now + Rational( 600 , 86400 )
+      end
+      App::Settings.last_time = App::Settings.timezone.now.to_datetime
+      main_input << "update"
+    when '['
+      if App::Settings.manual_time
+        App::Settings.manual_time -= Rational( 600 , 86400 )
+      else
+        App::Settings.manual_time = DateTime.now - Rational( 600 , 86400 )
+      end
+      App::Settings.last_time = App::Settings.timezone.now.to_datetime
+      main_input << "update"
     when Curses::Key::LEFT
       App::WIN.move(:left)
       App::WIN.drawWindow

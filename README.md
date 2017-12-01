@@ -37,6 +37,9 @@ Input new geographic location with G.
 
 Help window with H or ?.
 
+Change current time and date with t.
+
+Fast forward/reverse 10 seconds with < and >.  Fast forward/reverse 10 minutes with [/].
 If you are using a square (16x16, for example) font, the screen may appear stretched horizontally.  This is because I'm making a somewhat arbritray adjustment for typical font h/w ratios.  I'll maybe make this an option you can change at some point if it's needed.  For now, I'm aiming for usability rather than photo-realism.
 
 Hit q to exit.
@@ -45,7 +48,7 @@ Hit q to exit.
 
 Some very basic features are now present.  A small and not comprehensive list of what I have in mind next includes:
 
-* ~Manual input of time~, pause, fast forward/reverse.
+* ~Manual input of time~, pause, ~fast forward/reverse~.
 * Additional filters, and moving similar toggleable settings to a popup window.
 * Measurement tool.
 * Adding more stars and non-fixed objects (planets, comets, sun, moon, etc.).
@@ -54,6 +57,7 @@ Some very basic features are now present.  A small and not comprehensive list of
 * Protocols to control Meade and nexStar mounts via serial interface.  This is highly dependant on my actually getting ahold of one to test.  This feels like it should be a "far flung future" feature, but I think I'd like to put it in sooner than later, because I have the feeling that if this application will ever be of use to anyone, it will be as a minimalist, quick and dirty, interface to control mounts that can be run from anywhere with a terminal. 
 * Right ascension / declination and altitude / azimuth lines.
 * Separate magnitude filter for DSOs
+* Turn this into a ruby gem for ease of use
 * ~~Reorganize info window to floating positions~~
 
 ### Data Sources:

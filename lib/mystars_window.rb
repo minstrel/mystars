@@ -89,7 +89,7 @@ class MyStarsWindow < MyStars
     win = Curses.stdscr
     timewin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
     draw(timewin,2,2,0,"Press (1) to set a new time, (2) to set a new date.")
-    draw(timewin,3,2,0,"Enter to confirm or x to exit")
+    draw(timewin,3,2,0,"Enter to confirm or escape to exit")
     timewin.box("|","-")
     timewin.refresh
     if App::Settings.manual_time
@@ -187,16 +187,14 @@ class MyStarsWindow < MyStars
     win = Curses.stdscr
     searchwin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
     searchwin.box("|","-")
-    searchwin.setpos(2,2)
-    searchwin.addstr("Enter a name to search for")
+    draw(searchwin,2,2,0,"Enter a name to search for",false)
     searchwin.setpos(3,2)
     Curses.echo
     Curses.curs_set(1)
     searchname = searchwin.getstr
     searchwin.setpos(5,2)
-    searchwin.addstr("Showing first 10 results, type number to go to result")
-    searchwin.setpos(6,2)
-    searchwin.addstr("Any other key to exit")
+    draw(searchwin,5,2,0,"Showing first 10 results, type number to go to result",false)
+    draw(searchwin,6,2,0,"Any other key to exit",false)
     searchwin.setpos(7,2)
     # Match names containing the searched string, case-insensitive
     matches = App::Settings.collection.members.select { |o| o.name.downcase.delete(" ") =~ /#{searchname.downcase.delete("  ")}/ }
@@ -233,24 +231,18 @@ class MyStarsWindow < MyStars
     win = Curses.stdscr
     helpwin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
     helpwin.box("|","-")
-    helpwin.setpos(2,2)
-    helpwin.addstr("Arrow keys move around")
-    helpwin.setpos(3,2)
-    helpwin.addstr("(M) and (m) to filter by magnitude.")
-    helpwin.setpos(4,2)
-    helpwin.addstr("(+) and (-) to zoom in and out")
-    helpwin.setpos(5,2)
-    helpwin.addstr("Tab and Shift-Tab to cycle through visible objects")
-    helpwin.setpos(6,2)
-    helpwin.addstr("(c) to toggle constellation lines")
-    helpwin.setpos(7,2)
-    helpwin.addstr("(g) to toggle ground visibility")
-    helpwin.setpos(8,2)
-    helpwin.addstr("(L) to cycle label visibility level")
-    helpwin.setpos(9,2)
-    helpwin.addstr("(G) to input new geographic location")
-    helpwin.setpos(10,2)
-    helpwin.addstr("(q) to quit")
+    draw(helpwin,2,2,0,"Arrow keys move around",false)
+    draw(helpwin,3,2,0,"(M) and (m) to filter by magnitude.",false)
+    draw(helpwin,4,2,0,"(+) and (-) to zoom in and out",false)
+    draw(helpwin,5,2,0,"Tab and Shift-Tab to cycle through visible objects",false)
+    draw(helpwin,6,2,0,"(c) to toggle constellation lines",false)
+    draw(helpwin,7,2,0,"(g) to toggle ground visibility",false)
+    draw(helpwin,8,2,0,"(L) to cycle label visibility level",false)
+    draw(helpwin,9,2,0,"(G) to input new geographic location",false)
+    draw(helpwin,10,2,0,"(q) to quit",false)
+    draw(helpwin,11,2,0,"(t) to change current date and time",false)
+    draw(helpwin,12,2,0,"(>) or (<) to fast forward/reverse 10 seconds",false)
+    draw(helpwin,13,2,0,"(]) or ([) to fast forward/reverse 10 minutes",false)
     helpwin.refresh
     helpwin.getch
     helpwin.clear

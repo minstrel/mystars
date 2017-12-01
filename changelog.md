@@ -1,6 +1,7 @@
 ## Changelog
 0.0.7
 * Manual time input
+* Time fast forward and reverse
 
 0.0.6
 * I forgot to add 0.0.6 changes...
