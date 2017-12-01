@@ -40,6 +40,7 @@ Help window with H or ?.
 Change current time and date with t.
 
 Fast forward/reverse 10 seconds with < and >.  Fast forward/reverse 10 minutes with [/].
+
 If you are using a square (16x16, for example) font, the screen may appear stretched horizontally.  This is because I'm making a somewhat arbritray adjustment for typical font h/w ratios.  I'll maybe make this an option you can change at some point if it's needed.  For now, I'm aiming for usability rather than photo-realism.
 
 Hit q to exit.
