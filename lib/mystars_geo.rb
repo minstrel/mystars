@@ -45,31 +45,33 @@ class MyStarsGeo < MyStars
     end
     # Current DateTime, either specified else now
     # @time = if time then time else App::Settings.timezone.now.to_datetime end
-    # TODO get rid of App::Settings.manual_time, change it to something like
-    # App::Settings.time and use it all the time.
-    # That will also make it easier to pause, because then we just use App::Settings.time
-    # without modification as the current time if pause is set.
+    #
+    # We're using separate manual_time from current time, because we want
+    # current time to always be right now, but if manual_time is put in, we
+    # can deal with a little drift from actual timekeeping due to computation
+    # times.
+    #
+    # TZInfo gem currently (1.4.2) outputs timezone.now as the local time but with 0 offset
+    # So the below is necessary.  When that bug is fixed in a future gem, we can just go
+    # back to using App::Settings.timezone.now.to_datetime without all these
+    # shenanegans to get the offset in there.
     now = App::Settings.timezone.now.to_datetime
+    year = now.year
+    month = now.month
+    day = now.day
+    hour = now.hour
+    min = now.min
+    sec = now.sec
+    period = App::Settings.timezone.period_for_local(Time.new(year,month,day,hour,min,sec))
+    offset = Rational( (period.utc_offset + period.std_offset) , 86400 )
+    now = DateTime.new(year, month, day, hour, min, sec, offset)
     @time = if App::Settings.manual_time
               # If a manual time is set, use the UTC time at that local time
               # adjusted for the time passed since last time
               App::Settings.manual_time = App::Settings.manual_time + (now - App::Settings.last_time)
               App::Settings.manual_time
             else
-              # I think this is the only place I need to put the correct time with offset
-              # to correct the issue with time being incorrect.
-              # TZInfo gem currently (1.4.2) outputs timezone.now as the local time but with 0 offset
-              # So the below is necessary.  When that bug is fixed in a future gem, we can just go
-              # back to using App::Settings.timezone.now.to_datetime
-              year = now.year
-              month = now.month
-              day = now.day
-              hour = now.hour
-              min = now.min
-              sec = now.sec
-              period = App::Settings.timezone.period_for_local(Time.new(year,month,day,hour,min,sec))
-              offset = Rational( (period.utc_offset + period.std_offset) , 86400 )
-              DateTime.new(year, month, day, hour, min, sec, offset)
+              now
             end
     App::Settings.last_time = now
     # Julian Day, either specified (optional)

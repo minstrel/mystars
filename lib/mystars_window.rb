@@ -74,6 +74,10 @@ class MyStarsWindow < MyStars
     end
     # Force the next update to update the time zone
     App::Settings.timezone = nil
+    # TODO If we update the location, we need to update App::Settings.manual_time to
+    # be the same UTC time with the new offset.
+    # This means we might need to update App::Settings.timezone now instead of when
+    # update is run.
     App::INFO_WIN.updateLat
     Curses.noecho
     Curses.curs_set(0)
@@ -99,7 +103,8 @@ class MyStarsWindow < MyStars
       month = App::Settings.manual_time.month
       day = App::Settings.manual_time.day
     else
-      now = Time.now
+      now = App::Settings.timezone.now.to_datetime
+      # now = Time.now
       hour = now.hour
       min = now.min
       sec = now.sec
@@ -164,14 +169,15 @@ class MyStarsWindow < MyStars
         offset = Rational( (period.utc_offset + period.std_offset) , 86400 )
         App::Settings.manual_time = DateTime.new(year, month, day, hour, min, sec, offset)
         # Update the last updated time to now, so ticks proceed normally from here
-        App::Settings.last_time = App::Settings.timezone.now.to_datetime
+        now = App::Settings.timezone.now.to_datetime
+        hour = now.hour
+        min = now.min
+        sec = now.sec
+        year = now.year
+        month = now.month
+        day = now.day 
+        App::Settings.last_time = DateTime.new(year,month,day,hour,min,sec,offset)
         break
-        # TODO
-        # I think the below is fixed.  Need to test it out a bit and then delete these comments.
-        # Gotta figure out what's going on here.  When I create a manual time, the screen
-        # appears normal, except the info window time is displaying the local time
-        # minus the offset.  MyStarsGeo appears to be working as intended, so must be
-        # something here I think, maybe with how the offset is put in.
       when 27 # Escape / abort
         break
       else
