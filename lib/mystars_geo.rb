@@ -48,7 +48,7 @@ class MyStarsGeo < MyStars
     # TODO get rid of App::Settings.manual_time, change it to something like
     # App::Settings.time and use it all the time.
     # That will also make it easier to pause, because then we just use App::Settings.time
-    # without modification as the current time is pause is set.
+    # without modification as the current time if pause is set.
     now = App::Settings.timezone.now.to_datetime
     @time = if App::Settings.manual_time
               # If a manual time is set, use the UTC time at that local time

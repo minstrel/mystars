@@ -84,7 +84,6 @@ class MyStarsWindow < MyStars
   end
 
   def self.updateTime
-    # TODO finish method, accept user input time and use as new base time
     # Get new date and/or time from user, set as effective datetime
     win = Curses.stdscr
     timewin = win.subwin(30,60,win.maxy / 2 - 15, win.maxx / 2 - 30)
