@@ -72,12 +72,59 @@ class MyStarsWindow < MyStars
       geowin.setpos(5,2)
       App::Settings.lat = geowin.getstr.to_f
     end
-    # Force the next update to update the time zone
-    App::Settings.timezone = nil
+    # If we have a manual time, get the old offset to use later
+    if App::Settings.manual_time
+      old_offset = App::Settings.manual_time.offset
+    end
+    # Update the time zone
+    tf = TimezoneFinder.create
+    tz = tf.timezone_at(lng: App::Settings.lon, lat: App::Settings.lat)
+    if tz == nil
+      (1..20).step(2) do |x|
+        tz = tf.closest_timezone_at(lng: App::Settings.lon, lat: App::Settings.lat, delta_degree: x)
+        break if tz
+      end
+    end
+    # Fall back to EST if we can't find a proper zone
+    if tz == nil
+      tz = 'America/New_York'
+    end
+    App::Settings.timezone = TZInfo::Timezone.get(tz)
     # TODO If we update the location, we need to update App::Settings.manual_time to
     # be the same UTC time with the new offset.
     # This means we might need to update App::Settings.timezone now instead of when
     # update is run.
+
+    if App::Settings.manual_time
+
+      # Another kludge to get the resulting DateTime object to have the right offset
+      # If tzinfo gets updated, we can just call TZInfo::DataTimezone#utc_to_local
+
+      # Get the current date and time from App::Settings.manual_time
+      hour = App::Settings.manual_time.hour
+      min = App::Settings.manual_time.min
+      sec = App::Settings.manual_time.sec
+      year = App::Settings.manual_time.year
+      month = App::Settings.manual_time.month
+      day = App::Settings.manual_time.day
+      
+      # Use current date and time to figure out the offset at the new geo location
+      period = App::Settings.timezone.period_for_local(Time.new(year,month,day,hour,min,sec))
+      new_offset = Rational( (period.utc_offset + period.std_offset) , 86400 )
+
+      # Use the new offset to set App::Settings.manual_time to the right time with
+      # the right offset.
+      new_time = App::Settings.manual_time - (old_offset - new_offset)
+      hour = new_time.hour
+      min = new_time.min
+      sec = new_time.sec
+      year = new_time.year
+      month = new_time.month
+      day = new_time.day
+      App::Settings.manual_time = DateTime.new(year, month, day, hour, min, sec, new_offset)
+
+    end
+
     App::INFO_WIN.updateLat
     Curses.noecho
     Curses.curs_set(0)
