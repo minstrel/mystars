@@ -242,7 +242,8 @@ begin
       else
         App::Settings.manual_time = DateTime.now + Rational( 10 , 86400 )
       end
-      App::Settings.last_time = App::Settings.timezone.now.to_datetime
+      App::Settings.update_last_time
+      #App::Settings.last_time = App::Settings.timezone.now.to_datetime
       main_input << "update"
     when '<'
       if App::Settings.manual_time
@@ -250,7 +251,8 @@ begin
       else
         App::Settings.manual_time = DateTime.now - Rational( 10 , 86400 )
       end
-      App::Settings.last_time = App::Settings.timezone.now.to_datetime
+      App::Settings.update_last_time
+      #App::Settings.last_time = App::Settings.timezone.now.to_datetime
       main_input << "update"
     when ']'
       if App::Settings.manual_time
@@ -258,7 +260,8 @@ begin
       else
         App::Settings.manual_time = DateTime.now + Rational( 600 , 86400 )
       end
-      App::Settings.last_time = App::Settings.timezone.now.to_datetime
+      App::Settings.update_last_time
+      #App::Settings.last_time = App::Settings.timezone.now.to_datetime
       main_input << "update"
     when '['
       if App::Settings.manual_time
@@ -266,7 +269,8 @@ begin
       else
         App::Settings.manual_time = DateTime.now - Rational( 600 , 86400 )
       end
-      App::Settings.last_time = App::Settings.timezone.now.to_datetime
+      App::Settings.update_last_time
+      #App::Settings.last_time = App::Settings.timezone.now.to_datetime
       main_input << "update"
     when Curses::Key::LEFT
       App::WIN.move(:left)

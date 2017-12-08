@@ -52,7 +52,20 @@ module App
     :last_time,
     # Manually input effective time at given lat / lon
     :manual_time
-  )
+  ) do
+      def update_last_time
+        now = self.timezone.now.to_datetime
+        year = now.year
+        month = now.month
+        day = now.day
+        hour = now.hour
+        min = now.min
+        sec = now.sec
+        period = self.timezone.period_for_local(Time.new(year,month,day,hour,min,sec))
+        offset = Rational( (period.utc_offset + period.std_offset) , 86400 )
+        self.last_time = DateTime.new(year, month, day, hour, min, sec, offset)
+      end
+  end
   # This is slower than passing everything in to .new, but we're only doing
   # it once and it's more readable.
   Settings = AppSettings.new
