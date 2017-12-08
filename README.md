@@ -15,7 +15,7 @@ MyStars is currently pre-alpha.  My focus is on new features and not UI or bugs.
 With the requirements installed, clone the repo and run 
 ```
 bundle install
-mystars\_curses.rb.
+./mystars_curses.rb.
 ```
 
 When prompted, enter longitude and latitude.  The application will show a view facing north at 10 degrees altitude.
