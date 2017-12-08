@@ -5,16 +5,18 @@ This is a little ncurses based planetarium.
 ### Requirements
 
 * Ruby 2.1 or later
-* The ruby 'curses' gem, installed via:
-  `gem install curses`
-  or from source at https://github.com/ruby/curses
+* The 'bundler' gem
 * Curses, ncurses or PDCurses (some versions may have issues with Unicode characters, in this case the Greek letters and possibly the dot used to draw constellation lines).
 
 ### Current State & Instructions
 
 MyStars is currently pre-alpha.  My focus is on new features and not UI or bugs.
 
-With the requirements installed, clone the repo and run mystars\_curses.rb.
+With the requirements installed, clone the repo and run 
+```
+bundle install
+mystars\_curses.rb.
+```
 
 When prompted, enter longitude and latitude.  The application will show a view facing north at 10 degrees altitude.
 
