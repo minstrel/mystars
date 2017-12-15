@@ -66,6 +66,14 @@ class MyStarsGeo < MyStars
     offset = Rational( (period.utc_offset + period.std_offset) , 86400 )
     now = DateTime.new(year, month, day, hour, min, sec, offset)
     @time = if App::Settings.manual_time
+              # TODO Check if time is paused.  If it is, use App::Settings.manual_time.
+              # Else use the existing code below.
+              # It might be a good idea to set App::Settings.manual_time to App::Settings.last_time
+              # in the main loop when we pause the time.  That way we don't have to worry about the
+              # case of when we're using 'now'.
+              # TODO we should probably make a command to reset the time to 'now' and clear
+              # App::Settings.manual_time
+              #
               # If a manual time is set, use the UTC time at that local time
               # adjusted for the time passed since last time
               App::Settings.manual_time = App::Settings.manual_time + (now - App::Settings.last_time)

@@ -237,6 +237,7 @@ begin
       main_input << "update"
       user_input.wakeup
     when '>'
+      # Slow forward time
       if App::Settings.manual_time
         App::Settings.manual_time += Rational( 10 , 86400 )
       else
@@ -246,6 +247,7 @@ begin
       #App::Settings.last_time = App::Settings.timezone.now.to_datetime
       main_input << "update"
     when '<'
+      # Slow reverse time
       if App::Settings.manual_time
         App::Settings.manual_time -= Rational( 10 , 86400 )
       else
@@ -255,6 +257,7 @@ begin
       #App::Settings.last_time = App::Settings.timezone.now.to_datetime
       main_input << "update"
     when ']'
+      # Fast forward time
       if App::Settings.manual_time
         App::Settings.manual_time += Rational( 600 , 86400 )
       else
@@ -264,6 +267,7 @@ begin
       #App::Settings.last_time = App::Settings.timezone.now.to_datetime
       main_input << "update"
     when '['
+      # Fast reverse time
       if App::Settings.manual_time
         App::Settings.manual_time -= Rational( 600 , 86400 )
       else
@@ -272,6 +276,9 @@ begin
       App::Settings.update_last_time
       #App::Settings.last_time = App::Settings.timezone.now.to_datetime
       main_input << "update"
+    when ' '
+      # TODO Pause
+
     when Curses::Key::LEFT
       App::WIN.move(:left)
       App::WIN.drawWindow
